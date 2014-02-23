@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<robot name="mrl">
+  
+<link name="base_link">
+    <visual>
+      <geometry>
+        <cylinder length="0.127" radius="0.25"/>
+      </geometry>
+     <material name="white">
+        <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+  </link>
+    <!--collision>
+      <geometry>
+        <cylinder length="0.19" radius="0.25"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+      <mass value="3.6"/>
+      <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+    </inertial-->
+</robot>
