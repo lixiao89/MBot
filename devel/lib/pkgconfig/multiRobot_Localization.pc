@@ -1,0 +1,8 @@
+prefix=/home/lixiao/Desktop/MBot/devel
+
+Name: multiRobot_Localization
+Description: Description of multiRobot_Localization
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/lixiao/Desktop/MBot/devel/lib 
+Requires: 
