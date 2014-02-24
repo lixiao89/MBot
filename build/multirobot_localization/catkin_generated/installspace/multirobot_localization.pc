@@ -1,8 +1,0 @@
-prefix=/home/lixiao/Desktop/MBot/install
-
-Name: multirobot_localization
-Description: Description of multirobot_localization
-Version: 0.0.0
-Cflags: -I/home/lixiao/Desktop/MBot/install/include
-Libs: -L/home/lixiao/Desktop/MBot/install/lib 
-Requires: geometry_msgs pcl_ros roscpp tf rospy message_runtime

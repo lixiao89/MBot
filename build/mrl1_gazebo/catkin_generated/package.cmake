@@ -1,7 +1,0 @@
-set(_CATKIN_CURRENT_PACKAGE "mrl1_gazebo")
-set(mrl1_gazebo_MAINTAINER "lixiao <lixiao@todo.todo>")
-set(mrl1_gazebo_DEPRECATED "")
-set(mrl1_gazebo_VERSION "0.0.0")
-set(mrl1_gazebo_BUILD_DEPENDS "gazebo_ros" "roscpp" "rospy")
-set(mrl1_gazebo_RUN_DEPENDS "roscpp" "rospy" "gazebo_ros" "mrl1_description")
-set(mrl1_gazebo_BUILDTOOL_DEPENDS "catkin")

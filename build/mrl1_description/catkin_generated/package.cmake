@@ -1,7 +1,0 @@
-set(_CATKIN_CURRENT_PACKAGE "mrl1_description")
-set(mrl1_description_MAINTAINER "lixiao <lixiao@todo.todo>")
-set(mrl1_description_DEPRECATED "")
-set(mrl1_description_VERSION "0.0.0")
-set(mrl1_description_BUILD_DEPENDS "roscpp" "rospy")
-set(mrl1_description_RUN_DEPENDS "roscpp" "rospy")
-set(mrl1_description_BUILDTOOL_DEPENDS "catkin")

@@ -1,7 +1,0 @@
-set(_CATKIN_CURRENT_PACKAGE "erratic_description")
-set(erratic_description_MAINTAINER "lixiao <lixiao@todo.todo>")
-set(erratic_description_DEPRECATED "")
-set(erratic_description_VERSION "0.0.0")
-set(erratic_description_BUILD_DEPENDS "roscpp" "rospy")
-set(erratic_description_RUN_DEPENDS "roscpp" "rospy")
-set(erratic_description_BUILDTOOL_DEPENDS "catkin")

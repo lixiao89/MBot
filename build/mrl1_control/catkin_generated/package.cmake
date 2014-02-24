@@ -1,7 +1,0 @@
-set(_CATKIN_CURRENT_PACKAGE "mrl1_control")
-set(mrl1_control_MAINTAINER "lixiao <lixiao@todo.todo>")
-set(mrl1_control_DEPRECATED "")
-set(mrl1_control_VERSION "0.0.0")
-set(mrl1_control_BUILD_DEPENDS "ros_control" "ros_controllers")
-set(mrl1_control_RUN_DEPENDS "ros_control" "ros_controllers")
-set(mrl1_control_BUILDTOOL_DEPENDS "catkin")

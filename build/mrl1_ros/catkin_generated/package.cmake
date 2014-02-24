@@ -1,7 +1,0 @@
-set(_CATKIN_CURRENT_PACKAGE "mrl1_ros")
-set(mrl1_ros_MAINTAINER "lixiao <lixiao@todo.todo>")
-set(mrl1_ros_DEPRECATED "")
-set(mrl1_ros_VERSION "0.0.0")
-set(mrl1_ros_BUILD_DEPENDS "roscpp" "rospy" "std_msgs")
-set(mrl1_ros_RUN_DEPENDS "roscpp" "rospy" "std_msgs")
-set(mrl1_ros_BUILDTOOL_DEPENDS "catkin" "genmsg")

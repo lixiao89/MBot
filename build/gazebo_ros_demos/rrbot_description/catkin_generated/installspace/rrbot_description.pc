@@ -1,8 +1,0 @@
-prefix=/home/lixiao/Desktop/MBot/install
-
-Name: rrbot_description
-Description: Description of rrbot_description
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/lixiao/Desktop/MBot/install/lib 
-Requires: 

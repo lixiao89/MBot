@@ -1,7 +1,0 @@
-set(_CATKIN_CURRENT_PACKAGE "multirobot_localization")
-set(multirobot_localization_MAINTAINER "lixiao <lixiao@todo.todo>")
-set(multirobot_localization_DEPRECATED "")
-set(multirobot_localization_VERSION "0.0.0")
-set(multirobot_localization_BUILD_DEPENDS "geometry_msgs" "pcl_ros" "roscpp" "rospy" "tf")
-set(multirobot_localization_RUN_DEPENDS "geometry_msgs" "pcl_ros" "roscpp" "tf" "rospy" "message_runtime")
-set(multirobot_localization_BUILDTOOL_DEPENDS "catkin")
