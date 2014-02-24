@@ -1,0 +1,147 @@
+<launch>
+
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find mrl1_gazebo)/worlds/mrl.world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+#--------------------------------------------------------------------------------------------------------
+<group ns="mrl1">
+        <param name="tf_prefix" value="mrl1"/>
+        
+        <!-- send the mrl robot XML to param server -->
+        <param name="robot_description" command="$(find xacro)/xacro.py '$(find mrl1_description)/urdf/mrl1.xacro'" />
+        
+        <!-- push robot_description to factory and spawn robot in gazebo -->
+        <node name="spawn_mrl1" pkg="gazebo_ros" type="spawn_model"
+              args="-param robot_description
+                    -urdf
+                    -model mrl1"
+              respawn="false" output="screen" />
+              
+        <!-- start robot state publisher -->
+        <!--node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher1" output="screen" >
+            <param name="publish_frequency" type="double" value="50.0" />
+        </node-->
+    </group>
+
+#---------------------------------------------------------------------------------------------------------
+    <group ns="mrl2">
+        <param name="tf_prefix" value="mrl2"/>
+        
+        <!-- send the mrl2 robot XML to param server -->
+        <param name="robot_description" command="$(find xacro)/xacro.py '$(find mrl1_description)/urdf/mrl2.xacro'" />
+        
+        <!-- push robot_description to factory and spawn robot in gazebo -->
+        <node name="spawn_mrl2" pkg="gazebo_ros" type="spawn_model"
+              args="-param robot_description
+                    -urdf
+	            -x 1
+                    -y 1
+                    -z 0
+                    -model mrl2"
+              respawn="false" output="screen" />
+              
+        <!-- start robot state publisher -->
+        <!--node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher2" output="screen" >
+            <param name="publish_frequency" type="double" value="50.0" />
+        </node-->
+    </group>
+
+
+
+#-----------------------------------------------------------------------------------------------------------
+
+    <group ns="mrl3">
+        <param name="tf_prefix" value="mrl3"/>
+        
+        <!-- send the mrl2 robot XML to param server -->
+        <param name="robot_description" command="$(find xacro)/xacro.py '$(find mrl1_description)/urdf/mrl3.xacro'" />
+        
+        <!-- push robot_description to factory and spawn robot in gazebo -->
+        <node name="spawn_mrl3" pkg="gazebo_ros" type="spawn_model"
+              args="-param robot_description
+                    -urdf
+                    -x -1
+                    -y -1
+                    -z 0
+                    -model mrl3"
+              respawn="false" output="screen" />
+              
+        <!-- start robot state publisher -->
+        <!--node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher3" output="screen" >
+            <param name="publish_frequency" type="double" value="50.0" />
+        </node-->
+    </group>
+
+
+
+#-----------------------------------------------------------------------------------------------------------
+
+ <group ns="mrl4">
+        <param name="tf_prefix" value="mrl4"/>
+        
+        <!-- send the mrl4 robot XML to param server -->
+        <param name="robot_description" command="$(find xacro)/xacro.py '$(find mrl1_description)/urdf/mrl4.xacro'" />
+        
+        <!-- push robot_description to factory and spawn robot in gazebo -->
+        <!--node name="spawn_mrl4" pkg="gazebo_ros" type="spawn_model"
+              args="-param robot_description
+                    -urdf
+                    -x 1
+                    -y -1
+                    -z 0
+                    -model mrl4"
+              respawn="false" output="screen" /-->
+              
+        <!-- start robot state publisher -->
+        <!--node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher4" output="screen" >
+            <param name="publish_frequency" type="double" value="50.0" />
+        </node-->
+    </group>
+
+
+
+#-----------------------------------------------------------------------------------------------------------
+
+ <group ns="mrl5">
+        <param name="tf_prefix" value="mrl5"/>
+        
+        <!-- send the mrl5 robot XML to param server -->
+        <param name="robot_description" command="$(find xacro)/xacro.py '$(find mrl1_description)/urdf/mrl5.xacro'" />
+        
+        <!-- push robot_description to factory and spawn robot in gazebo -->
+        <!--node name="spawn_mrl5" pkg="gazebo_ros" type="spawn_model"
+              args="-param robot_description
+                    -urdf
+                    -x -1
+                    -y 1
+                    -z 0
+                    -model mrl5"
+              respawn="false" output="screen" /-->
+              
+        <!-- start robot state publisher -->
+        <!--node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher5" output="screen" >
+            <param name="publish_frequency" type="double" value="50.0" />
+        </node-->
+    </group>
+
+
+
+#-----------------------------------------------------------------------------------------------------------
+  <!-- ros_control mrlros launch file -->
+  <!--include file="$(find mrl1_control)/launch/mrl_control.launch" /-->
+
+</launch>
