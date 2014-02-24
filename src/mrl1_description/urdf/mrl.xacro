@@ -478,7 +478,7 @@
             </clip>
         </camera>
         <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
-            <alwaysOn>true</alwaysOn>
+            <alwaysOn>true</alwaysOn>cl
                 <updateRate>10.0</updateRate>
                 <cameraName>camera</cameraName>
                 <frameName>camera_link</frameName>                   
