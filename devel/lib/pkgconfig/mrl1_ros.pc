@@ -1,0 +1,8 @@
+prefix=/home/lixiao/Desktop/MBot/devel
+
+Name: mrl1_ros
+Description: Description of mrl1_ros
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/lixiao/Desktop/MBot/devel/lib 
+Requires: 

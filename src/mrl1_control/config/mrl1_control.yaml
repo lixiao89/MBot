@@ -1,0 +1,16 @@
+# CHANGE "mrl1" TO THE NAME OF THE ROBOT INSTANCE
+mrl1:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    publish_rate: 50  
+    type: joint_state_controller/JointStateController
+  
+  # Position Controllers ---------------------------------------
+  left_wheel_controller:
+    type: effort_controllers/JointEffortController
+    joint: left_wheel_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+  right_wheel_controller:
+    type: effort_controllers/JointEffortController
+    joint: right_wheel_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}

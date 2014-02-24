@@ -1,0 +1,8 @@
+prefix=/home/lixiao/Desktop/MBot/install
+
+Name: mrl1_control
+Description: Description of mrl1_control
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/lixiao/Desktop/MBot/install/lib 
+Requires: 

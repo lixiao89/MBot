@@ -1,0 +1,8 @@
+prefix=/home/lixiao/Desktop/MBot/devel
+
+Name: mrl1_gazebo
+Description: Description of mrl1_gazebo
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/lixiao/Desktop/MBot/devel/lib 
+Requires: gazebo_ros
