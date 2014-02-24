@@ -8,7 +8,9 @@
 <xacro:property name="wheel_r" value="0.08" />
 <xacro:property name="wheel_l" value="0.05" /> <!--wheel thickness-->
 
-<xacro:property name="test" value="${wheel_r+wheel_l}" /> 
+<xacro:property name="test" value="${wheel_r+wheel_l}" />
+<xacro:property name="camera_link" value="0.05" /> 
+
 
 <!-- Import all Gazebo-customization elements, including Gazebo colors -->
   <!--xacro:include filename="$(find mrl1_description)/urdf/rrbot.gazebo" /-->
@@ -228,11 +230,75 @@
   </link>
 
   <joint name="hokuyo_joint" type="fixed">
-    <origin xyz="0 0 0.09" rpy="0 0 -1.57"/> 
+    <origin xyz="0 -0.1 0.09" rpy="0 0 -1.57"/> 
     <parent link="base_link"/>
     <child link="hokuyo_link"/>
   </joint>
 
+
+ <!--Kinect Stand-->
+
+ <link name="kinect_stand">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+      <!--material name="red"/-->
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+<joint name="kinect_stand_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 0.05 0.0825" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="kinect_stand"/>
+  </joint>
+
+
+ <!-- Kinect Camera -->
+  <link name="camera_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<mesh filename="package://mrl1_description/meshes/kinect.dae"/>
+      </geometry>
+      <!--material name="red"/-->
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+<joint name="camera_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 -0.03 0.075" rpy="0 1.57 -1.57"/>
+    <parent link="kinect_stand"/>
+    <child link="camera_link"/>
+  </joint>
 
 <!--Transmission to left motor-->
 <transmission name="tran1">
@@ -306,12 +372,18 @@
      <dampingFactor>0.4</dampingFactor>
   </gazebo>
 
+ <!-- Kinect Stand -->
+  <gazebo reference="kinect_stand">
+    <material>Gazebo/black</material>
+  </gazebo>
+
+
   <!-- hokuyo -->
   <gazebo reference="hokuyo_link">
     <sensor type="ray" name="head_hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
       <visualize>true</visualize>
-      <update_rate>10</update_rate>
+      <update_rate>40</update_rate>
       <ray>
         <scan>
           <horizontal>
@@ -342,6 +414,93 @@
       </plugin>
     </sensor>
   </gazebo>
+
+<!-- camera -->
+  <!--gazebo reference="camera_link">
+    <sensor type="camera" name="camera1">
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type-->
+          <!-- Noise is sampled independently per pixel on each frame.  
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <!--mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>mrl/camera1</cameraName--> <!--CHANGE HERE FOR DIFFERENT ROBOTS!!!-->
+        <!--imageTopicName>mrl_image_raw</imageTopicName>
+        <cameraInfoTopicName>mrl_camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo-->
+
+<!--Kinect-->
+<!-- SENSOR -->
+<gazebo reference="camera_link">
+    <sensor type="depth" name="openni_camera">       
+        <always_on>1</always_on>
+        <visualize>true</visualize>           
+        <camera>
+            <horizontal_fov>1.047</horizontal_fov>  
+            <image>
+                <width>640</width>
+                <height>480</height>
+                <format>R8G8B8</format>
+            </image>
+            <depth_camera>
+
+            </depth_camera>
+            <clip>
+                <near>0.1</near>
+                <far>100</far>
+            </clip>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
+            <alwaysOn>true</alwaysOn>
+                <updateRate>10.0</updateRate>
+                <cameraName>camera</cameraName>
+                <frameName>camera_link</frameName>                   
+            <imageTopicName>mrlKinect/rgb/image_raw</imageTopicName>
+            <depthImageTopicName>mrlKinect/depth/image_raw</depthImageTopicName>
+            <pointCloudTopicName>mrlKinect/depth/points</pointCloudTopicName>
+            <cameraInfoTopicName>mrlKinect/rgb/camera_info</cameraInfoTopicName>              
+            <depthImageCameraInfoTopicName>mrlKinect/depth/camera_info</depthImageCameraInfoTopicName>            
+            <pointCloudCutoff>0.4</pointCloudCutoff>                
+                <hackBaseline>0.07</hackBaseline>
+                <distortionK1>0.0</distortionK1>
+                <distortionK2>0.0</distortionK2>
+                <distortionK3>0.0</distortionK3>
+                <distortionT1>0.0</distortionT1>
+                <distortionT2>0.0</distortionT2>
+            <CxPrime>0.0</CxPrime>
+            <Cx>0.0</Cx>
+            <Cy>0.0</Cy>
+            <focalLength>0.0</focalLength>
+            </plugin>
+    </sensor>
+</gazebo>
 
 </robot>
 
