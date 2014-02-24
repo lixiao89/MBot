@@ -295,7 +295,7 @@
 
 <joint name="camera_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz="0 -0.03 0.075" rpy="0 1.57 -1.57"/>
+    <origin xyz="0 -0.03 0.075" rpy="0 0 -1.57"/>
     <parent link="kinect_stand"/>
     <child link="camera_link"/>
   </joint>

@@ -484,7 +484,7 @@
                 <frameName>camera_link</frameName>                   
             <imageTopicName>mrlKinect/rgb/image_raw</imageTopicName>
             <depthImageTopicName>mrlKinect/depth/image_raw</depthImageTopicName>
-            <pointCloudTopicName>mrlKinect/depth/points</pointCloudTopicName>
+            <pointCloudTopicName>mrlKinect/depth/pointCloud</pointCloudTopicName>
             <cameraInfoTopicName>mrlKinect/rgb/camera_info</cameraInfoTopicName>              
             <depthImageCameraInfoTopicName>mrlKinect/depth/camera_info</depthImageCameraInfoTopicName>            
             <pointCloudCutoff>0.4</pointCloudCutoff>                
