@@ -1,0 +1,73 @@
+<?xml version='1.0'?>
+
+<project>
+        <name>People2D: realtime people detection in 2D range data</name>
+
+        <author>
+		<name>Luciano Spinello</name>
+		<url>http://www.informatik.uni-freiburg.de/~spinello</url>
+	</author>
+
+        <briefdescription>
+	People2D provides an efficient implementation of the people detector in 2D data originally 
+	developed in Human Detection using Multimodal and Multidimensional Features (ICRA 2008). 
+	It includes training and detection module C++ source code and example files. 
+	The code has been written in a way that it is very easy to modify / hack. 
+	NO background subtraction is needed with this method. 
+	The detector runs at 2KHz on a fast computer (i7 CPU - 1.6Ghz) 
+        </briefdescription>
+
+        <description>
+        People2D is a principled approach for detecting people in 2D range data.
+        It is based on discriminative classification of 
+        a rich geometrical/statistical feature-set for describing  people in 2D range data.
+		The method first segments 2D range data via jump-distance clustering, computes descriptors,
+		and runs Adaboost prediction. The approach allows detections in single frames, without the need of 
+		tracking and background-learning. It can been used in indoor, outdoor, from a static or a moving platform. 
+		Appropriate training data must be provided to the algorithm to perform well in all cases.
+		For showing the functionalities of the software, an uncluttered indoor toy data set 
+		containing training / testing files is provided. 
+		Tools for visualization, quantitative performance evaluation 
+		(precision-recall curves) are also included in the package.
+		It is considered state-of-the-art in the field of 2D detection from single frames (03/2011).
+        </description>
+
+        <requirement>
+	Developed under Linux (GCC). Tested under Linux. Requires GSL.
+	</requirement>
+
+	<input>
+	Logfile of 2D range data
+	</input>
+
+	<logformat> 
+	
+	The file format used is very simple. A single text file contains a set of 2D laser scans in which each line represents a single scan.
+	ID1 X11 Y11 L11 X12 Y12 L12 ... X1N Y1N L1N
+	ID2 X2 Y21 L21 X22 Y22 L22 ... X2N Y2N L2N
+	
+	ID is the numeric identifier of the scan (ignored), Xp and Yp are the cartesian coordinates of the point p, Lp is the binary 
+	label of point p (0 if people -- 1 if background). The value of Lp is ignored when the file is read for people detection.
+	</logformat>
+
+
+	<paper>
+		<title>Human Detection using Multimodal and Multidimensional Features.</title>
+		<authorlist>L.Spinello, R.Siegwart</authorlist>
+			<publishedin>IEEE International Conference on Robotics and Automation (ICRA)</publishedin>
+				<year>2008</year>
+				<url>http://www.informatik.uni-freiburg.de/~spinello/spinello08human.pdf</url>
+		<title>Using Boosted Features for the Detection of People in 2D Range Data.</title>
+		<authorlist>Arras K.O., Mozos O.M., Burgard W</authorlist>
+			<publishedin>IEEE International Conference on Robotics and Automation (ICRA)</publishedin>
+				<year>2007</year>
+				<url>http://www.informatik.uni-freiburg.de/~arras/papers/arrasICRA07.pdf</url>
+	</paper>
+
+	<license>People2D is licenced under Creative Commons BY-NC-SA 3.0</license>
+
+	<furthermore>
+	C++ code, well-coded, compact, efficient.
+	</furthermore>
+
+</project>

@@ -1,0 +1,74 @@
+<?xml version='1.0'?>
+
+<project>
+        <name>RatSLAM</name>
+
+        <author>
+		<name>Michael Milford (algorithm)</name>
+		<url>https://wiki.qut.edu.au/display/cyphy/Michael+Milford</url>
+	</author>
+
+       <author>
+		<name>Gordon Wyeth (algorithm)</name>
+		<url>https://wiki.qut.edu.au/display/cyphy/Gordon+Wyeth</url>
+	</author>
+        <author>
+		<name>David Ball (code)</name>
+		<url>https://wiki.qut.edu.au/display/cyphy/David+Ball</url>
+	</author>
+        <author>
+		<name>Scott Heath (code)</name>
+		<url></url>
+	</author>
+
+
+        <url>http://code.google.com/p/ratslam/</url>
+
+        <briefdescription>
+	 RatSLAM is an appearance based topological SLAM system inspired by the hippocampus.
+	</briefdescription>
+
+        <description>
+	 RatSLAM is a robot navigation and SLAM system based on computational models of the hippocampus. The approach uses a combination of appearance based visual scene matching, competitive attractor networks, and a semi-metric topological map representation. The approach has been proven in a real tiem 40 hour robot delivery task, mapping an entire Australian suburb and on Oxford's New College dataset. Notably, RatSLAM works well on images obtained from cheap cameras. The RatSLAM system contrasts many of the other SLAM approaches that involve expensive precision laser sensors and occupancy grids.
+	</description>
+
+        <requirement>
+	Linux/Unix, Robot Operating System (ROS)
+	</requirement>
+        <requirement>
+	Boost
+	</requirement>
+	<requirement>
+	Irrlicht (if visualisation is needed)
+	</requirement>
+	<map>topological maps</map>
+
+	<input>OpenRatSLAM takes mono images and odometry as standard ROS messages. The images can be forward facing or omnidirectional and can be high or low quality.</input>
+
+	<logformat> 
+	ROSbag
+	</logformat>
+
+	<paper>
+		<title>OpenRatSLAM: an open source brain-based SLAM system</title>
+		<authorlist>David Ball, Scott Heath, Janet Wiles, Gordon Wyeth, Peter Corke, Michael Milford</authorlist>
+		<publishedin>Autonomous Robots</publishedin>
+		<year>2013</year>
+		<url>link.springer.com/10.1007/s10514-012-9317-9</url>
+	</paper>
+	<paper>
+		<title>Persistent navigation and mapping using a biologically inspired SLAM system</title>
+		<authorlist>Michael Milford, Gordon Wyeth</authorlist>
+		<publishedin>International Journal of Robotics Research</publishedin>
+		<year>2010</year>
+		<url>http://dx.doi.org/10.1177/0278364909340592</url>
+	</paper>
+
+	<license>OpenRatSLAM is released under the GNU GPL v3 license. Please contact the authors if you require a more permissive license.</license>
+
+	<furthermore>
+	OpenRatSLAM is avilable as a library for intergration, eg with OpenCV, without requiring ROS.
+	</furthermore>
+	 
+
+</project>

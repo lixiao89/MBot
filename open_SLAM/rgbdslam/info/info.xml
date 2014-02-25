@@ -1,0 +1,72 @@
+<?xml version='1.0'?>
+
+<project>
+        <name>RGBDSLAM - 6DOF SLAM for Kinect-style cameras</name>
+
+        <author>
+		<name>Felix Endres</name>
+		<url>http://www.informatik.uni-freiburg.de/~endres</url>
+	</author>
+        <author>
+		<name>Juergen Hess</name>
+		<url>http://www.informatik.uni-freiburg.de/~hess</url>
+	</author>        <author>
+		<name>Nikolas Engelhard</name>
+	</author>        <author>
+		<name>Juergen Sturm</name>
+		<url>http://cvpr.in.tum.de/members/sturmju</url>
+	</author>        <author>
+		<name>Wolfram Burgard</name>
+		<url>http://www.informatik.uni-freiburg.de/~burgard</url>
+	</author>
+        <briefdescription>
+        RGBDSLAM allows to quickly acquire colored 3D models of objects and
+        indoor scenes with a hand-held Kinect-style camera. It provides a
+        SLAM front-end based on visual features s.a. SURF or SIFT to match 
+        pairs of acquired images, and uses RANSAC to robustly estimate the 
+        3D transformation between them. The resulting camera pose graph is
+        then optimized with the SLAM back-end HOG-Man. 
+        </briefdescription>
+
+        <description>
+        RGBDSLAM allows to quickly acquire colored 3D models of objects and
+        indoor scenes with a hand-held Kinect-style camera. It uses visual
+        features s.a. SURF or SIFT to match pairs of acquired images, and uses
+        RANSAC to robustly estimate the 3D transformation between them. To
+        achieve online processing, the current image is matched only versus a
+        subset of the previous images.  Subsequently,
+        it constructs a graph whose nodes correspond to camera views and whose
+        edges correspond to the estimated 3D transformations.  The graph is
+        then optimized with HOG-Man to reduce the accumulated pose errors.
+        Further information and installation instructions can be found in the
+        README file and at 
+        </description>
+
+        <requirement>
+	Developed and tested under Ubuntu (GCC). Requires ROS Diamondback and HOG-Man.
+	</requirement>
+
+	<map>Pose graph with colored point clouds</map>
+
+	<input>
+    Monochrome and depth image, colored point cloud
+	</input>
+
+	<paper>
+		<title>An Evaluation of the RGB-D SLAM System</title>
+		<authorlist>F. Endres, J. Hess, N. Engelhard, J. Sturm, D. Cremers, W. Burgard</authorlist>
+			<publishedin>Proc. of the IEEE Int. Conf. on Robotics and Automation (ICRA)</publishedin>
+				<year>2012</year>
+				<url>http://www.informatik.uni-freiburg.de/~endres/files/publications/endres12icra.pdf</url>
+	</paper>
+
+        <documentation>
+          <title>RGBDSLAM on ros.org</title>
+  <url>http://www.ros.org/wiki/rgbdslam</url>
+        </documentation>
+
+	<license>RGBDSLAM is licenced under GPL v.3 </license>
+
+</project>
+
+

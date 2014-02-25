@@ -1,0 +1,44 @@
+<?xml version='1.0'?>
+
+<project>
+        <name>KLD-Sampling: Adequately Sampling from an Unknown Distribution</name>
+
+        <author>
+		<name>Patrick Beeson</name>
+		<url>http://www.cs.utexas.edu/~pbeeson</url>
+	</author>
+
+        <url>http://www.cs.utexas.edu/users/qr/software/kld-sampling.html</url>
+
+        <briefdescription>
+	This code implements Dieter Fox's KLD-sampling algorithm (KLD stands for Kullback-Leibler distance).
+	</briefdescription>
+
+        <description>
+	When using particle filters to approximate an unknown
+	distribution, too few particles may not adequately sample the
+	underlying distribution, while too many samples can increase
+	the run time of time sensitive programs (e.g. particle filter
+	localization for a mobile robot). Running this program
+	demonstrates how different KLD-sampling parameters affect both
+	the number of samples and the estimated mean and variance of
+	the underlying distribution. This sample program assumes a 1D
+	underlying distribution, but the provided KLD-sampling module
+	works on multivariate distributions.
+	</description>
+
+        <requirement>
+	Linux/Unix, G++ 3.3/4.0.x
+	</requirement>
+
+	<paper>
+	       <title>Adapting the sample size in particle filters through KLD-sampling</title>
+	       <authorlist>Dieter Fox</authorlist>
+	       <publishedin>International Journal of Robotics Research (IJRR)</publishedin>
+	       <year>2003</year>
+	       <url>http://www.cs.washington.edu/homes/fox/abstracts/adaptive-ijrr-2003.abstract.html</url>
+	</paper>
+
+	<license>This program is released under the GNU General Public License (GPL).  Copyright (C) 2006 - Patrick Beeson</license>
+
+</project>

@@ -1,0 +1,73 @@
+<?xml version='1.0'?>
+
+<project>
+  <name>iSAM - Incremental Smoothing and Mapping</name>
+
+  <author>
+    <name>Michael Kaess</name>
+    <url>http://people.csail.mit.edu/kaess</url>
+  </author>
+  <author>
+    <name>Hordur Johannsson</name>
+    <url>http://people.csail.mit.edu/hordurj</url>
+  </author>
+  <author>
+    <name>John Leonard</name>
+    <url>http://people.csail.mit.edu/jleonard</url>
+  </author>
+
+  <url>http://people.csail.mit.edu/kaess/isam</url>
+
+  <briefdescription>
+    iSAM is a general optimization library for incremental sparse
+    nonlinear problems as encountered in simultaneous localization and
+    mapping (SLAM).
+  </briefdescription>
+
+  <description>
+    The iSAM library provides efficient algorithms for batch and
+    incremental optimization, recovering the exact least-squares
+    solution. The library can easily be extended to new problems, and
+    functionality for often encountered 2D and 3D SLAM problems is
+    already provided. The iSAM algorithm was originally developed by
+    Michael Kaess and Frank Dellaert at Georgia Tech.
+  </description>
+
+  <requirement>
+    Linux/Unix/Mac, requires SuiteSparse.
+  </requirement>
+
+  <map>Feature-based or pose graph</map>
+
+  <input>Factor graph: Nodes (variables) and factors (measurements)</input>
+
+  <documentation> 
+    <title>Installation instructions and source code documentation</title>
+    <url>http://people.csail.mit.edu/kaess/isam/doc</url>
+  </documentation>
+
+  <paper>
+    <title>iSAM: Incremental Smoothing and Mapping</title>
+    <authorlist>Michael Kaess, Ananth Ranganathan and Frank Dellaert</authorlist>
+    <publishedin>IEEE Transactions on Robotics (TRO), vol. 24, no. 6, pp. 1365-1378</publishedin>
+    <year>2008</year>
+    <url>http://www.cc.gatech.edu/~kaess/pub/Kaess08tro.pdf</url>
+  </paper>
+  <paper>
+    <title>Covariance Recovery from a Square Root Information Matrix for Data Association</title>
+    <authorlist>Michael Kaess and Frank Dellaert</authorlist>
+    <publishedin>Journal of Robotics and Autonomous Systems (RAS), vol. 57, pp. 1198-1210</publishedin>
+    <year>2009</year>
+    <url>http://www.cc.gatech.edu/~kaess/pub/Kaess09ras.pdf</url>
+  </paper>
+
+  <license>
+    iSAM is licenced under GNU LGPL version 2.1.
+  </license>
+
+  <furthermore>
+    Compact and efficient C++ library code. Also includes an iSAM
+    application with integrated 3D viewer and several demo programs.
+  </furthermore>
+
+</project>
