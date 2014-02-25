@@ -3,4 +3,6 @@ for different number of robots (less than 5), make changes to multi_mrl.launch a
 for more than 5 robots, changes need to be made for the number of urdfs as well as mrl_control.yaml
 
 
-testing git
+Testing SLAM packages
+1. hector slam (deprecated for catkin)
+2. GSLAM
