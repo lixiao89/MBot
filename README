@@ -9,13 +9,17 @@ Testing SLAM packages on ros
 
 20120225
 ---------
-added SLAM C++ Packages
-1.DP-SLAM
-2.Grid SLAM
-3.iSAM
-4.OpenRatsSLAM
-5.rgbdSLAM
-6.tinySLAM
+1. added SLAM C++ Packages
+1)DP-SLAM
+2)Grid SLAM
+3)iSAM
+4)OpenRatsSLAM
+5)rgbdSLAM
+6)tinySLAM
 
-7.KLD-Sampling
-8.People2D 
+7)KLD-Sampling
+8)People2D 
+————————
+2. for depthCloud orientation problem (shown in rive) using libgazebo_ros_openni_kinect.so, modify gazebo_ros_openni_kinect.cpp following
+http://answers.gazebosim.org/question/4266/gazebo-15-libgazebo_openni_kinectso-pointcloud/
+
