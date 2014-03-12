@@ -26,8 +26,16 @@ http://answers.gazebosim.org/question/4266/gazebo-15-libgazebo_openni_kinectso-p
 
 20140312
 ----------------
-1. Install "rocon" and "rocon_tools" meta-package in workspace "ros_external_pkgs"
-2. Moved "ros_external_pkgs" to workspace "MBot"
+1. Install Rocon
+------
+1) install rocon according to "http://wiki.ros.org/rocon/Tutorials/hydro/Installation"
+2) installed libavahi-client-dev, libavahi-core-dev, as per the package.xml in package zerocon_avahi,navigation
+3) install packages zero_conf_avahi_suit, zeroconf_msgs, yujin_maps,kobuki_softapps, kobuki_msgs,robot_pose_publisher
+
+2. Install multimaster_fkie
+----------------------
+
+3. Moved "ros_external_pkgs" to workspace "MBot"
 
 
 
