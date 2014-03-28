@@ -3,21 +3,34 @@
 #include "std_msgs/Float64.h"
 #include "sensor_msgs/LaserScan.h"
 #include "ProcessLaserScan.hpp"
-#include "DistLocalization.hpp"
+#include "DistLocalization.cpp"
+#include "PositionGT.hpp"
+#include "eigen3/Eigen/Dense"
+#include "ExpMath.cpp"
 
 #include <sstream>
 #include <vector>
 
 
+using namespace std;
 
 int main(int argc, char **argv)
 {
+
+    Eigen::Matrix3d X;
+    X << 1,2,3,4,5,6,7,8,9;
+
+    cout<<"ad of X is:"<<endl<<GroupMathSE::ExpMath::SE2_ad(X)<<endl;
 
   ros::init(argc, argv, "mrl_control");
 
 
   ros::NodeHandle n;
   
+
+  // used to publish the ground truth of the poses of the robots given by gazebo
+  PositionGT GTPub(n,"/gazebo/model_states");
+
 // Initializes control for robot "mrl1"
 //inputs are: node handle, laser scan topic name, left wheel controller, right wheel controller
   DistLocalization mctrl1(n,"/mrl1/laser/scan","/mrl1/left_wheel_controller/command","/mrl1/right_wheel_controller/command");
@@ -46,6 +59,9 @@ int main(int argc, char **argv)
         mctrl3.Explore();
       //mctrl4.publishMotorControl();
       //mctrl5.publishMotorControl();
+        
+        GTPub.posGTPublish();
+        
         ros::spinOnce();
         loop_rate.sleep();
         ++count;

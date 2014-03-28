@@ -23,7 +23,7 @@ class ProcessLaserScan{
         std::vector<float> rangeReadings;
 	    std::vector<float> angleReadings;
 	
-     
+        float maxRange;
         // number of laser scans
         int scanNum;
         
@@ -55,6 +55,8 @@ class ProcessLaserScan{
 		angleReadings.clear();
 	  size_t num_ranges = Lscan_msg->ranges.size();
       scanNum = num_ranges;
+
+      maxRange = Lscan_msg->range_max;
 
 	  int x;
 	 

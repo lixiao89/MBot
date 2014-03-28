@@ -6,11 +6,13 @@
 #include "std_msgs/Float64.h"
 #include "sensor_msgs/LaserScan.h"
 #include "ProcessLaserScan.hpp"
+#include "PositionGT.hpp"
+
 #include <eigen3/Eigen/Dense>
 #include <sstream>
 #include <vector>
 #include <iostream>
-
+#include <math.h>
 
 // Let robot turn to the left if longest scan is to the left of the robot's center and likewise to the right
 //
@@ -40,19 +42,20 @@ class DistLocalization : public ProcessLaserScan{
 
 
         // Destructor
-        ~DistLocalization()
+        ~DistLocalization(void)
         {
         }
 
         
         // main method to control robot
-        void moveToLongestScan()
-       {
-        }
+        void moveToLongestScan();
 
 
+        void moveSinasoidal();
+
+        
         // publish motor commands
-        void Explore()
+        void Explore(void)
         {
               
             if(rangeReadings.size() < scanNum)
@@ -63,7 +66,10 @@ class DistLocalization : public ProcessLaserScan{
             {
 
                //current exploration method! 
-               moveToLongestScan();    
+              
+              //this->moveToLongestScan();    
+                this->moveSinasoidal();
+
                leftWheelPub_.publish(leftEffort);
                rightWheelPub_.publish(rightEffort);
  
@@ -78,6 +84,11 @@ class DistLocalization : public ProcessLaserScan{
 
         // Distributed EKF
         void distEKF()
+        {
+        }
+
+        // Exponential Localization
+        void expLocalization()
         {
         }
 };
