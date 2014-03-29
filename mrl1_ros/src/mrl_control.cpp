@@ -18,9 +18,11 @@ int main(int argc, char **argv)
 {
 
     Eigen::Matrix3d X;
-    X << 1,2,3,4,5,6,7,8,9;
+    X << 0,-1,0,
+         1,0,1,
+         0,0,1;
 
-    cout<<"ad of X is:"<<endl<<GroupMathSE::ExpMath::SE2_ad(X)<<endl;
+    cout<<"ad of X is:"<<endl<<GroupMathSE::ExpMath::SE2_Adjoint(X)<<endl;
 
   ros::init(argc, argv, "mrl_control");
 

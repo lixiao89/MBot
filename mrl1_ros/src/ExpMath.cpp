@@ -1,4 +1,5 @@
 #include "ExpMath.hpp"
+#include "eigen3/Eigen/LU"
 
 namespace GroupMathSE{
 
@@ -21,5 +22,146 @@ namespace GroupMathSE{
         return adX;
     }
 
+    Eigen::Matrix3d ExpMath::SE2_Adjoint(Eigen::Matrix3d g)
+    {
+        Eigen::Matrix2d M;
+        M << 0, 1,
+             -1,0;
+        
+        Eigen::Vector2d t(g(1-1,3-1),g(2-1,3-1));
+        Eigen::Matrix2d R;
+
+        R = M.block(0,0,2,2);
+
+        Eigen::Matrix3d Adg;
+
+        Adg << R, M*t,
+               Eigen::RowVectorXd::Zero(2),1;
+
+        return Adg;
+
+    }
+
+
+      Eigen::Matrix3d ExpToSE2(Eigen::Vector2d ep)
+      {
+          double v1 = ep(1);
+          double v2 = ep(2);
+          double alpha = ep(3);
+
+          Eigen::Matrix2d R;
+
+          R << cos(alpha), -sin(alpha),
+               sin(alpha), cos(alpha);
+
+          Eigen::Matrix2d tempM;
+
+          tempM << sin(alpha), -(1-cos(alpha)),
+                   (1-cos(alpha)), sin(alpha);
+
+          tempM = (1/alpha)*tempM;
+
+          Eigen::Vector2d t(v1,v2);
+
+          t = tempM*t;
+
+          Eigen::Matrix3d g;
+
+          g << R, t,
+              0,0,0,1;
+
+          return g;
+
+      }
+
+
+        Eigen::Vector3d SE2ToExp(Eigen::Matrix3d g)
+        {
+            double alpha = atan2(g(2,1),g(2,2));
+
+            Eigen::Matrix2d tempM;
+
+            tempM << sin(alpha), -(1-cos(alpha)),
+                     (1-cos(alpha)), sin(alpha);
+
+            tempM = (1/alpha)*tempM;
+
+            Eigen::Vector2d t(g(1-1,3-1),g(2-1,3-1));
+            
+            Eigen::Vector2d v;
+
+            v << tempM.inverse()*t;
+
+            Eigen::Vector3d ep(v(1),v(2),alpha);
+
+           return ep;  
+        }
+
+
+         Eigen::Vector3d SE2ToXYTheta(Eigen::Matrix3d g)
+         {
+              Eigen::Vector3d X(g(1-1,3-1),g(2-1,3-1), atan2(g(2-1,1-1),g(2-1,2-1)));
+
+              return X;
+
+         }
+
+
+        Eigen::Matrix3d skew(Eigen::vector3d x)
+        {
+            Eigen::Matrix3d X;
+
+            X << 0, -x(3-1), x(2-1),
+                 x(3-1), 0, -x(1-1),
+                 -x(2-1), x(1-1), 0;
+
+            return X;
+        }
+
+         Eigen::Vector3d vee(Eigen::Matrix3d X)
+         {
+             Eigen::Vector3d x(X(1-1,3-1),X(2-1,3-1),-X(1-1,2-1));
+
+             return x;
+         }
+
+         Eigen::Matrix3d wedge(Eigen::Vector3d x)
+         {
+             Eigen::Matrix3d X;
+
+             X << 0, -x(3-1), x(1-1),
+                  x(3-1), 0, x(2-1),
+                    0,    0,   0;
+
+             return X;
+         }
+}
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
