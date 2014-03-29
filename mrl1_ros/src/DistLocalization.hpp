@@ -82,15 +82,25 @@ class DistLocalization : public ProcessLaserScan{
 //----------  Distributed Localization Methods  ---------
         
 
-        // Distributed EKF
-        void distEKF()
-        {
-        }
+//////////////////  Distributed EKF //////////////////
 
-        // Exponential Localization
-        void expLocalization()
-        {
-        }
+
+        // Main method to call
+        void distEKF();
+       
+       
+
+        
+        
+///////////////// Exponential Localization ///////////
+        
+        // Main method to call
+        void expLocalization();
+
+        
+       
+
+
 };
 
 #endif

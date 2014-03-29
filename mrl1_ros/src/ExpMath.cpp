@@ -107,7 +107,7 @@ namespace GroupMathSE{
          }
 
 
-        Eigen::Matrix3d skew(Eigen::vector3d x)
+        Eigen::Matrix3d skew(Eigen::Vector3d x)
         {
             Eigen::Matrix3d X;
 
@@ -127,15 +127,25 @@ namespace GroupMathSE{
 
          Eigen::Matrix3d wedge(Eigen::Vector3d x)
          {
-             Eigen::Matrix3d X;
+             Eigen::Matrix3d XX;
 
-             X << 0, -x(3-1), x(1-1),
+             XX << 0, -x(3-1), x(1-1),
                   x(3-1), 0, x(2-1),
                     0,    0,   0;
 
-             return X;
+             return XX;
          }
-}
+
+         Eigen::Matrix3d XYThetaToSE2(Eigen::Vector3d cc)
+         {
+             Eigen::Matrix3d g;
+
+             g << cos(cc(3-1)), -sin(cc(3-1)), cc(1-1),
+                  sin(cc(3-1)), cos(cc(3-1)), cc(2-1),
+                  0,0,1;
+
+             return g;
+         }
 
 }
 

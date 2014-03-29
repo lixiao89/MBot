@@ -46,11 +46,14 @@ void DistLocalization::moveSinasoidal()
     rightEffort.data = sin(t)+0.5;
 }
 
+//////////////////// Distributed EKF ///////////////////////
+//
 
 
 
 
 
 
+///////////////// Exponential Localization /////////////////
 
 

@@ -33,6 +33,16 @@ namespace GroupMathSE{
         // convert 3x3 homoegeneous matrix to a vector of x y theta
         static Eigen::Vector3d SE2ToXYTheta(Eigen::Matrix3d g);
 
+        // calculate the skew symmetric matrix of vector x
+        static Eigen::Matrix3d skew(Eigen::Vector3d x);
+        // calculate the SE2 vee
+        static Eigen::Vector3d vee(Eigen::Matrix3d X);
+
+        // calculate the SE2 wedge
+        static Eigen::Matrix3d wedge(Eigen::Vector3d x);
+
+        // convert x y theta to SE2 homoegeneous matrix
+        static Eigen::Matrix3d XYThetaToSE2(Eigen::Vector3d cc);
 }
 
 
