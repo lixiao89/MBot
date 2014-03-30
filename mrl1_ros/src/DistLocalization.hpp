@@ -11,6 +11,7 @@
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/LU>
+#include <eigen3/unsupported/Eigen/MatrixFunctions>
 #include <sstream>
 #include <vector>
 #include <iostream>
@@ -106,6 +107,17 @@ class DistLocalization : public ProcessLaserScan{
        
         // returns xm and Sm
          void generate_Sm(Eigen::Matrix3d m_im,Eigen::Matrix3d mu_m,Eigen::Matrix3d a_m,Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Matrix3d Sigma_m,Eigen::Vector3d& xm,Eigen::Matrix3d& Sm);
+
+         // % mu_i and cov_i are 3x3 matrices representing the estimated mean
+         // % and covariance of the robot to be updated
+         //
+         // % a_i is a 3x3 matrix denoting the initial position of robot i
+         //
+         // % MU_m, COV_m are 3x3xn matrices representing the means and covariances of the n neighboring robots for robot i to take measurements from
+         //
+         // % A_i is a 3x3 matrix denoting the initial positions of all other m robots
+         // % Mim 3x3 is the exact measurement of robot i relative to m [xi,Si] = Generate_Si(cov_i)
+         void Fusion(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Matrix3d cov_i,Eigen::Matrix3d A_m,Eigen::Matrix3d MU_m,Eigen::Matrix3d COV_m,Eigen::Matrix3d Mim, Eigen::Matrix3d& mu_i_bar, Eigen::Matrix3d& Sigma_i_bar);
 
         // returns the final estimate update for mean (mu_i_bar) and covariance (Sigma_i_bar)
          void fusion_with_sensor_noise(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Matrix3d cov_i,Eigen::Matrix3d a_j,Eigen::Matrix3d mu_j,Eigen::Matrix3d cov_j,Eigen::Matrix3d mu_m,Eigen::Matrix3d cov_m,Eigen::Matrix3d& mu_i_bar,Eigen::Matrix3d& Sigma_i_bar);
