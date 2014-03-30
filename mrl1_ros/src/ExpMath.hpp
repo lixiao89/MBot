@@ -23,12 +23,12 @@ namespace GroupMathSE{
 
         // convert exponential coordinate to homoegeneous 
         // input: vector3d exponential coordinate in [v1,v2,alpha]
-        static Eigen::Matrix3d ExpToSE2(Eigen::Vector2d ep);
+        static Eigen::Matrix3d ExpToSE2(Eigen::Vector3d ep);
 
         // convert homoegeneous matrix in SE2 to exponential coordinates
         // input: 3x3 homoegeneous matrix in SE2
         static Eigen::Vector3d SE2ToExp(Eigen::Matrix3d g);
-    };  
+     
 
         // convert 3x3 homoegeneous matrix to a vector of x y theta
         static Eigen::Vector3d SE2ToXYTheta(Eigen::Matrix3d g);
@@ -43,6 +43,8 @@ namespace GroupMathSE{
 
         // convert x y theta to SE2 homoegeneous matrix
         static Eigen::Matrix3d XYThetaToSE2(Eigen::Vector3d cc);
+};
+
 }
 
 

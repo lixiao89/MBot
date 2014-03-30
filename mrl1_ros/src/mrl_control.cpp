@@ -6,7 +6,6 @@
 #include "DistLocalization.cpp"
 #include "PositionGT.hpp"
 #include "eigen3/Eigen/Dense"
-#include "ExpMath.cpp"
 
 #include <sstream>
 #include <vector>

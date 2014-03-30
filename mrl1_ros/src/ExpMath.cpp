@@ -43,7 +43,7 @@ namespace GroupMathSE{
     }
 
 
-      Eigen::Matrix3d ExpToSE2(Eigen::Vector2d ep)
+      Eigen::Matrix3d ExpMath::ExpToSE2(Eigen::Vector3d ep)
       {
           double v1 = ep(1);
           double v2 = ep(2);
@@ -75,7 +75,7 @@ namespace GroupMathSE{
       }
 
 
-        Eigen::Vector3d SE2ToExp(Eigen::Matrix3d g)
+        Eigen::Vector3d ExpMath::SE2ToExp(Eigen::Matrix3d g)
         {
             double alpha = atan2(g(2,1),g(2,2));
 
@@ -98,7 +98,7 @@ namespace GroupMathSE{
         }
 
 
-         Eigen::Vector3d SE2ToXYTheta(Eigen::Matrix3d g)
+         Eigen::Vector3d ExpMath::SE2ToXYTheta(Eigen::Matrix3d g)
          {
               Eigen::Vector3d X(g(1-1,3-1),g(2-1,3-1), atan2(g(2-1,1-1),g(2-1,2-1)));
 
@@ -107,7 +107,7 @@ namespace GroupMathSE{
          }
 
 
-        Eigen::Matrix3d skew(Eigen::Vector3d x)
+        Eigen::Matrix3d ExpMath::skew(Eigen::Vector3d x)
         {
             Eigen::Matrix3d X;
 
@@ -118,14 +118,14 @@ namespace GroupMathSE{
             return X;
         }
 
-         Eigen::Vector3d vee(Eigen::Matrix3d X)
+         Eigen::Vector3d ExpMath::vee(Eigen::Matrix3d X)
          {
              Eigen::Vector3d x(X(1-1,3-1),X(2-1,3-1),-X(1-1,2-1));
 
              return x;
          }
 
-         Eigen::Matrix3d wedge(Eigen::Vector3d x)
+         Eigen::Matrix3d ExpMath::wedge(Eigen::Vector3d x)
          {
              Eigen::Matrix3d XX;
 
@@ -136,7 +136,7 @@ namespace GroupMathSE{
              return XX;
          }
 
-         Eigen::Matrix3d XYThetaToSE2(Eigen::Vector3d cc)
+         Eigen::Matrix3d ExpMath::XYThetaToSE2(Eigen::Vector3d cc)
          {
              Eigen::Matrix3d g;
 
