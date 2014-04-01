@@ -58,7 +58,21 @@ void DistLocalization::moveSinasoidal()
 
  // Main method to call
      void DistLocalization::expLocalization()
-    {
+    { 
+        int minRangeIndex = 0;
+        float minRangeTemp = maxRange; 
+
+        for(int i=0; i < rangeReadings.size();i++)
+        {
+            if(rangeReadings.at(i) < minRangeTemp)
+            {
+                    minRangeTemp = rangeReadings.at(i);
+                    minRangeIndex = i;
+            }
+        }
+
+       
+
          //fusion_with_sensor_noise(a_i, mu_i, cov_i, a_j, mu_j, cov_j, mu_m, cov_m, mu_i_bar, Sigma_i_bar);
 
         posEst.x = 1;
