@@ -17,11 +17,30 @@ int main(int argc, char **argv)
 {
 
     Eigen::Matrix3d X;
-    X << 0,-1,0,
-         1,0,1,
-         0,0,1;
+ double Ei[3][3][3]=
+    {
+        {
+            {0,-1,0},
+            {1,0,0},
+            {0,0,0},
+        },
 
-    cout<<"ad of X is:"<<endl<<GroupMathSE::ExpMath::SE2_Adjoint(X)<<endl;
+        {
+            {0,0,1},
+            {0,0,0},
+            {0,0,0},
+        },
+
+        {
+            {0,0,0},
+            {0,0,1},
+            {0,0,0},
+        },
+
+    };
+
+ X = GroupMathSE::ExpMath::mapArray3D(Ei,0);
+    cout<<"ad of X is:"<<endl<<X<<endl;
 
   ros::init(argc, argv, "mrl_control");
 
@@ -34,19 +53,14 @@ int main(int argc, char **argv)
 
 // Initializes control for robot "mrl1"
 //inputs are: node handle, laser scan topic name, left wheel controller, right wheel controller
-  DistLocalization mctrl1(n,"/mrl1/laser/scan","/mrl1/left_wheel_controller/command","/mrl1/right_wheel_controller/command");
+  DistLocalization mctrl1(n,"/mrl1/laser/scan","/mrl1/left_wheel_controller/command","/mrl1/right_wheel_controller/command","/mrl1/posEst");
   
 // Initializes control for robot "mrl2"
 //inputs are: node handle, laser scan topic name, left wheel controller, right wheel controller
-  DistLocalization mctrl2(n,"/mrl2/laser/scan","/mrl2/left_wheel_controller/command","/mrl2/right_wheel_controller/command");
+  DistLocalization mctrl2(n,"/mrl2/laser/scan","/mrl2/left_wheel_controller/command","/mrl2/right_wheel_controller/command","mrl2/posEst");
  
-  DistLocalization mctrl3(n,"/mrl3/laser/scan","/mrl3/left_wheel_controller/command","/mrl3/right_wheel_controller/command");
+ // DistLocalization mctrl3(n,"/mrl3/laser/scan","/mrl3/left_wheel_controller/command","/mrl3/right_wheel_controller/command","mrl3/posEst");
  
- //MoveToLongestScan mctrl4(n,"/mrl4/laser/scan","/mrl4/left_wheel_controller/command","/mrl4/right_wheel_controller/command");
- 
-// MoveToLongestScan mctrl5(n,"/mrl5/laser/scan","/mrl5/left_wheel_controller/command","/mrl5/right_wheel_controller/command");
- 
-
 
   ros::Rate loop_rate(40);
 
@@ -57,11 +71,11 @@ int main(int argc, char **argv)
         mctrl1.Explore();
         mctrl2.Explore();
 
-        mctrl3.Explore();
-      //mctrl4.publishMotorControl();
-      //mctrl5.publishMotorControl();
-        
+
+        mctrl1.expLocalization();
+
         GTPub.posGTPublish();
+
         
         ros::spinOnce();
         loop_rate.sleep();

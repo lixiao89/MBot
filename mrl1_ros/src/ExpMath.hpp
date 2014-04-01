@@ -43,8 +43,14 @@ namespace GroupMathSE{
 
         // convert x y theta to SE2 homoegeneous matrix
         static Eigen::Matrix3d XYThetaToSE2(Eigen::Vector3d cc);
-};
 
+        // map the n_th slice of "a" to a 3x3 matrix
+        static Eigen::Matrix3d mapArray3D(double a[][3][3], int n);
+
+        static Eigen::Matrix3d polarToSE2(double s)
+
+
+    };
 }
 
 

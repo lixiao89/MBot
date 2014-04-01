@@ -147,6 +147,16 @@ namespace GroupMathSE{
              return g;
          }
 
+        Eigen::Matrix3d ExpMath::mapArray3D(double a[][3][3], int n)
+        {
+            Eigen::Matrix3d M;
+
+            M << a[n][0][0],a[n][0][1],a[n][0][2],
+                 a[n][1][0],a[n][1][1],a[n][1][2],
+                 a[n][2][0],a[n][2][1],a[n][2][2];
+
+            return M;
+        }
 }
 
 

@@ -59,6 +59,14 @@ void DistLocalization::moveSinasoidal()
  // Main method to call
      void DistLocalization::expLocalization()
     {
+         //fusion_with_sensor_noise(a_i, mu_i, cov_i, a_j, mu_j, cov_j, mu_m, cov_m, mu_i_bar, Sigma_i_bar);
+
+        posEst.x = 1;
+        posEst.y = 1;
+        posEst.z = 0;
+
+        poseEstimate_.publish(posEst);
+
     }
 
 	    // returns xi and Si
@@ -140,7 +148,85 @@ void DistLocalization::Fusion(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Ma
     // --------------- Perform the Convolution-like Calculation ------------------
 
     // Basis elements for SE(2)
-    Eigen::Matrix3d E;
+    Eigen::Matrix3d E1,E2,E3;
 
+
+    double E_basis[3][3][3]=
+    {
+        {
+            {0,-1,0},
+            {1,0,0},
+            {0,0,0},
+        },
+
+        {
+            {0,0,1},
+            {0,0,0},
+            {0,0,0},
+        },
+
+        {
+            {0,0,0},
+            {0,0,1},
+            {0,0,0},
+        },
+
+    };
+   /* E1 << 0,-1,0,
+          1,0,0,
+          0,0,0;
+
+    E2 << 0,0,1,
+          0,0,0,
+          0,0,0;
+
+    E3 << 0,0,0,
+          0,0,1,
+          0,0,0;*/
+
+
+    Eigen::Matrix3d mu2;
+    mu2 = a_j*mu_j;
+
+    Eigen::Matrix3d A,B,C,D,E,temp;
+    temp = GroupMathSE::ExpMath::SE2_Adjoint(mu2.inverse());
+    A =temp*cov_j*temp.transpose();
+    B = cov_m;
+
+
+    C = Eigen::MatrixXd::Zero(3,3);
+    D = Eigen::MatrixXd::Zero(3,3);
+    E = Eigen::MatrixXd::Zero(3,3);
+
+    for(int i = 0; i < 3; i++)
+    {
+        for(int j = 0; j < 3; j++)
+        {
+            Eigen::Matrix3d Ei,Ej;
+
+            Ei = GroupMathSE::ExpMath::mapArray3D(E_basis,i);
+            Ej = GroupMathSE::ExpMath::mapArray3D(E_basis,j);
+
+
+            Eigen::Matrix3d adi,adj;
+            adi = GroupMathSE::ExpMath::SE2_ad(Ei);
+            adj = GroupMathSE::ExpMath::SE2_ad(Ej);
+
+            C = C + adi*B*adj.transpose()*A(i,j);
+            D = D + adi*adj*A(i,j)*B + (adi*adj*A(i,j)*B).transpose();
+            E = E + adi*adj*B(i,j)*A + (adi*adj*B(i,j)*A).transpose();
+        }
+    }
+
+    C = C/4;
+    D = D/12;
+    E = E/12;
+
+    Eigen::Matrix3d cov_nin;
+    cov_nin = A + B + C + D + E;
+
+    
+    Fusion(a_i,mu_i,cov_i,a_j,mu_j,cov_nin,mu_m,mu_i_bar,Sigma_i_bar);
+    
 }
 

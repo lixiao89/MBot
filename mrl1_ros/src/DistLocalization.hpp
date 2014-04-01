@@ -8,6 +8,7 @@
 #include "ProcessLaserScan.hpp"
 #include "PositionGT.hpp"
 #include "ExpMath.cpp"
+#include "geometry_msgs/Point.h"
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/LU>
@@ -19,30 +20,30 @@
 
 
 using namespace std;
-// Let robot turn to the left if longest scan is to the left of the robot's center and likewise to the right
-//
 // Inherits from class "ProcessLaserScan"
 class DistLocalization : public ProcessLaserScan{
 
     public:
         std_msgs::Float64 leftEffort;
         std_msgs::Float64 rightEffort;
+        geometry_msgs::Point posEst;
 
         ros::Publisher leftWheelPub_;
         ros::Publisher rightWheelPub_;
        
+        ros::Publisher poseEstimate_;
         ros::NodeHandle nh_;
 
 
         // Constructor
-        DistLocalization(ros::NodeHandle& nh,std::string laserTopic, std::string leftwheelcontrollertopic, std::string rightwheelcontrollertopic):ProcessLaserScan(nh,laserTopic)
+        DistLocalization(ros::NodeHandle& nh,std::string laserTopic, std::string leftwheelcontrollertopic, std::string rightwheelcontrollertopic, std::string posEstTopic):ProcessLaserScan(nh,laserTopic)
         {
             nh_ = nh;
 
              leftWheelPub_ = nh_.advertise<std_msgs::Float64>(leftwheelcontrollertopic, 1000);
             rightWheelPub_ = nh_.advertise<std_msgs::Float64>(rightwheelcontrollertopic, 1000);  
             
-
+            poseEstimate_ = nh_.advertise<geometry_msgs::Point>(posEstTopic,1000);
         }
 
 
