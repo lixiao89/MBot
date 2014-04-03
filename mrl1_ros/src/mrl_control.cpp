@@ -52,14 +52,11 @@ int main(int argc, char **argv)
   PositionGT GTPub(n,"/gazebo/model_states");
 
 // Initializes control for robot "mrl1"
-//inputs are: node handle, laser scan topic name, left wheel controller, right wheel controller
-  DistLocalization mctrl1(n,"/mrl1/laser/scan","/mrl1/left_wheel_controller/command","/mrl1/right_wheel_controller/command","/mrl1/posEst");
+//inputs are: node handle, laser scan topic name, left wheel controller, right wheel controller, published self pose estimate, subscribed neighbor pose estimate
+  DistLocalization mctrl1(n,"/mrl1/laser/scan","/mrl1/left_wheel_controller/command","/mrl1/right_wheel_controller/command","/mrl1/poseEstPub","/mrl2/poseEstPub","/mrl1/joint_states");
   
 // Initializes control for robot "mrl2"
-//inputs are: node handle, laser scan topic name, left wheel controller, right wheel controller
-  DistLocalization mctrl2(n,"/mrl2/laser/scan","/mrl2/left_wheel_controller/command","/mrl2/right_wheel_controller/command","mrl2/posEst");
- 
- // DistLocalization mctrl3(n,"/mrl3/laser/scan","/mrl3/left_wheel_controller/command","/mrl3/right_wheel_controller/command","mrl3/posEst");
+  DistLocalization mctrl2(n,"/mrl2/laser/scan","/mrl2/left_wheel_controller/command","/mrl2/right_wheel_controller/command","/mrl2/poseEstPub","/mrl1/poseEstPub","/mrl2/joint_states");
  
 
   ros::Rate loop_rate(40);
@@ -73,9 +70,9 @@ int main(int argc, char **argv)
 
 
         mctrl1.expLocalization();
+        mctrl2.expLocalization();
 
         GTPub.posGTPublish();
-
         
         ros::spinOnce();
         loop_rate.sleep();

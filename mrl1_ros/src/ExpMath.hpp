@@ -47,7 +47,7 @@ namespace GroupMathSE{
         // map the n_th slice of "a" to a 3x3 matrix
         static Eigen::Matrix3d mapArray3D(double a[][3][3], int n);
 
-        static Eigen::Matrix3d polarToSE2(double s)
+        static Eigen::Matrix3d polarToSE2(double s);
 
 
     };

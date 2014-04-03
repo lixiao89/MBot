@@ -1,5 +1,43 @@
 #include "DistLocalization.hpp"
 
+std_msgs::Float64 DistLocalization::velocityPID(float velDesire, float currVel, float kp, float ki, float kd)
+{
+    float p_error; // difference b/w desired vel and current vel
+    float i_error; // sum of errors over time
+    float d_error; // difference b/w previous and curr proportional error
+
+    static float previous_error = 0;
+    static float integral_error = 0;
+
+    float p_out; // proportional component of output
+    float i_out;
+    float d_out;
+
+    float output; // sum of PID outputs
+
+    // Calculate three errors
+    p_error = velDesire - currVel;
+    i_error = integral_error;
+    d_error = p_error - previous_error;
+
+    // calcualte the three output components
+    p_out = kp*p_error;
+    i_out = ki*i_error;
+    d_out = kd*d_error;
+
+    output = p_out + i_out + d_out;
+   
+    //cout << output << endl;
+
+    previous_error = p_error;
+    integral_error += p_error;
+
+    std_msgs::Float64 jointEffort;
+
+    jointEffort.data = output;
+
+    return jointEffort;
+}
 
 void DistLocalization::moveToLongestScan()
 {
@@ -71,13 +109,14 @@ void DistLocalization::moveSinasoidal()
             }
         }
 
+
        
 
          //fusion_with_sensor_noise(a_i, mu_i, cov_i, a_j, mu_j, cov_j, mu_m, cov_m, mu_i_bar, Sigma_i_bar);
 
         posEst.x = 1;
         posEst.y = 1;
-        posEst.z = 0;
+        posEst.theta = 1;
 
         poseEstimate_.publish(posEst);
 

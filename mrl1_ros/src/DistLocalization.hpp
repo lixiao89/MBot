@@ -9,6 +9,9 @@
 #include "PositionGT.hpp"
 #include "ExpMath.cpp"
 #include "geometry_msgs/Point.h"
+#include "geometry_msgs/Pose2D.h"
+#include "NeighborInfoSub.hpp"
+#include "JointEncoderSub.hpp"
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/LU>
@@ -21,12 +24,12 @@
 
 using namespace std;
 // Inherits from class "ProcessLaserScan"
-class DistLocalization : public ProcessLaserScan{
+class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public JointEncoderSub{
 
     public:
         std_msgs::Float64 leftEffort;
         std_msgs::Float64 rightEffort;
-        geometry_msgs::Point posEst;
+        geometry_msgs::Pose2D posEst;
 
         ros::Publisher leftWheelPub_;
         ros::Publisher rightWheelPub_;
@@ -36,14 +39,14 @@ class DistLocalization : public ProcessLaserScan{
 
 
         // Constructor
-        DistLocalization(ros::NodeHandle& nh,std::string laserTopic, std::string leftwheelcontrollertopic, std::string rightwheelcontrollertopic, std::string posEstTopic):ProcessLaserScan(nh,laserTopic)
+        DistLocalization(ros::NodeHandle& nh,std::string laserTopic, std::string leftwheelcontrollertopic, std::string rightwheelcontrollertopic, std::string poseEstPubTopic, std::string poseEstSubTopic,std::string jointStateTopic):ProcessLaserScan(nh,laserTopic),NeighborInfoSub(nh,poseEstSubTopic),JointEncoderSub(nh,jointStateTopic)
         {
             nh_ = nh;
 
              leftWheelPub_ = nh_.advertise<std_msgs::Float64>(leftwheelcontrollertopic, 1000);
             rightWheelPub_ = nh_.advertise<std_msgs::Float64>(rightwheelcontrollertopic, 1000);  
             
-            poseEstimate_ = nh_.advertise<geometry_msgs::Point>(posEstTopic,1000);
+            poseEstimate_ = nh_.advertise<geometry_msgs::Pose2D>(poseEstPubTopic,1000);
         }
 
 
@@ -53,6 +56,9 @@ class DistLocalization : public ProcessLaserScan{
         }
 
         
+        // PID control velocity via effort
+        std_msgs::Float64 velocityPID(float velDesire, float currVel,float kp, float ki, float kd);
+
         // main method to control robot
         void moveToLongestScan();
 
@@ -64,7 +70,8 @@ class DistLocalization : public ProcessLaserScan{
         void Explore(void)
         {
               
-            if(rangeReadings.size() < scanNum)
+           // if(rangeReadings.size() < scanNum)
+            if(encoderLeftVel > 10)
             { 
                 ros::Duration(0.5).sleep(); 
             }
@@ -74,12 +81,17 @@ class DistLocalization : public ProcessLaserScan{
                //current exploration method! 
               
               //this->moveToLongestScan();    
-                this->moveSinasoidal();
+              //this->moveSinasoidal();
 
+
+
+                leftEffort = this->velocityPID(1,encoderLeftVel,0.5,0.4,0.2);
+                rightEffort = this->velocityPID(1,encoderRightVel,0.5,0.4,0.2);
                leftWheelPub_.publish(leftEffort);
                rightWheelPub_.publish(rightEffort);
  
-            // std::cout<<angleReadings.at(1)<<std::endl;
+                cout<< leftEffort.data<<","<<rightEffort.data<<endl;
+                //cout<< encoderLeftVel << endl;
             }
 
         }

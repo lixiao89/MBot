@@ -25,12 +25,10 @@ class PositionGT{
 	    
         geometry_msgs::Pose posMrl1;
         geometry_msgs::Pose posMrl2;
-        geometry_msgs::Pose posMrl3;
 
         
         ros::Publisher posMrl1Pub_;
         ros::Publisher posMrl2Pub_;
-        ros::Publisher posMrl3Pub_;
 
         //constructor
         PositionGT();
@@ -46,7 +44,6 @@ class PositionGT{
             
             posMrl1Pub_ = nh_.advertise<geometry_msgs::Pose>("/mrl1Pos", 1000);
             posMrl2Pub_ = nh_.advertise<geometry_msgs::Pose>("/mrl2Pos", 1000);  
-            posMrl3Pub_ = nh_.advertise<geometry_msgs::Pose>("/mrl3Pos", 1000);  
             
         }
 
@@ -63,7 +60,6 @@ class PositionGT{
         
         posMrl1 = modelstate_msg->pose[1];
         posMrl2 = modelstate_msg->pose[2];
-        posMrl3 = modelstate_msg->pose[3];
 
     }
 
@@ -72,7 +68,6 @@ class PositionGT{
     {
         posMrl1Pub_.publish(posMrl1);
         posMrl2Pub_.publish(posMrl2);
-        posMrl3Pub_.publish(posMrl3);
 
     }
 };      
