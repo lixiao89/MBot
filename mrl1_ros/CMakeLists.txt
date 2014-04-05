@@ -120,7 +120,7 @@ add_dependencies(mrl_control ${catkin_EXPORTED_TARGETS})
 #   ${catkin_LIBRARIES}
 # )
 
-target_link_libraries(mrl_control ${catkin_LIBRARIES})
+target_link_libraries(mrl_control ${catkin_LIBRARIES} ginac)
 
 #############
 ## Install ##

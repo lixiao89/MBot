@@ -122,6 +122,13 @@ void DistLocalization::moveSinasoidal()
 
     }
 
+ void DistLocalization::SDEPrediction(float w1, float w2, Eigen::Matrix3d& mu, Eigen::Matrix3d& cov)
+{
+    float a,b,c;
+   // mu = 1;
+}
+	
+
 	    // returns xi and Si
 void DistLocalization::generate_Si(Eigen::Matrix3d Sigma_i, Eigen::Vector3d& xi, Eigen::Matrix3d& Si)
 {

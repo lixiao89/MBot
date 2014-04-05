@@ -15,6 +15,14 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
+  /* symbol x("x"), y("y");
+             ex foo = x+y/2;
+             ex bar = foo.subs(x==1);
+             ex foobar = bar.subs(y==1.2);
+             cout<< foobar<<endl;
+
+             double m = 1.29;
+             cout<<foobar+m<<endl;*/
 
     Eigen::Matrix3d X;
  double Ei[3][3][3]=
@@ -74,6 +82,7 @@ int main(int argc, char **argv)
 
         GTPub.posGTPublish();
         
+
         ros::spinOnce();
         loop_rate.sleep();
         ++count;

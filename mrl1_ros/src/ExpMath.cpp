@@ -157,6 +157,74 @@ namespace GroupMathSE{
 
             return M;
         }
+
+         void ExpMath::convolutionSE2(Eigen::Matrix3d mu1,Eigen::Matrix3d mu2,Eigen::Matrix3d cov1,Eigen::Matrix3d cov2,Eigen::Matrix3d& mu_bar,Eigen::Matrix3d& cov_bar)
+         { 
+                mu_bar = mu1*mu2;
+
+                 double E_basis[3][3][3]=
+                {
+                    {
+                        {0,-1,0},
+                        {1,0,0},
+                        {0,0,0},
+                    },
+
+                    {
+                        {0,0,1},
+                        {0,0,0},
+                        {0,0,0},
+                    },
+
+                    {
+                        {0,0,0},
+                        {0,0,1},
+                        {0,0,0},
+                    },
+
+                };
+
+
+        Eigen::Matrix3d A,B,C,D,E,temp;
+        temp = GroupMathSE::ExpMath::SE2_Adjoint(mu2.inverse());
+        A =temp*cov1*temp.transpose();
+        B = cov2;
+
+
+        C = Eigen::MatrixXd::Zero(3,3);
+        D = Eigen::MatrixXd::Zero(3,3);
+        E = Eigen::MatrixXd::Zero(3,3);
+
+        for(int i = 0; i < 3; i++)
+        {
+            for(int j = 0; j < 3; j++)
+            {
+                Eigen::Matrix3d Ei,Ej;
+
+                Ei = GroupMathSE::ExpMath::mapArray3D(E_basis,i);
+                Ej = GroupMathSE::ExpMath::mapArray3D(E_basis,j);
+
+
+                Eigen::Matrix3d adi,adj;
+                adi = GroupMathSE::ExpMath::SE2_ad(Ei);
+                adj = GroupMathSE::ExpMath::SE2_ad(Ej);
+
+                C = C + adi*B*adj.transpose()*A(i,j);
+                D = D + adi*adj*A(i,j)*B + (adi*adj*A(i,j)*B).transpose();
+                E = E + adi*adj*B(i,j)*A + (adi*adj*B(i,j)*A).transpose();
+            }
+        }
+
+        C = C/4;
+        D = D/12;
+        E = E/12;
+
+        cov_bar = A + B + C + D + E;
+
+
+         }
+
+         
 }
 
 

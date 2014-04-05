@@ -12,6 +12,7 @@
 #include "geometry_msgs/Pose2D.h"
 #include "NeighborInfoSub.hpp"
 #include "JointEncoderSub.hpp"
+#include "/usr/include/ginac/ginac.h"
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/LU>
@@ -23,6 +24,8 @@
 
 
 using namespace std;
+using namespace GiNaC;
+
 // Inherits from class "ProcessLaserScan"
 class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public JointEncoderSub{
 
@@ -115,7 +118,16 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
         // Main method to call
         void expLocalization();
 
-	    // returns xi and Si
+        // given command of the two wheels, returns the predicted mean and covariance of the kinematic cart
+        // inputs: w1 and w2 are left and right angular velocities
+        // outputs: predicted mean and covariance in SE2
+        void SDEPrediction(float w1, float w2, Eigen::Matrix3d& mu, Eigen::Matrix3d& cov);
+ 
+  // integrate for covariance in the prediction step 
+        static double SimpsonIntegrate();
+
+  
+        // returns xi and Si
          void generate_Si(Eigen::Matrix3d Sigma_i, Eigen::Vector3d& xi, Eigen::Matrix3d& Si);       
        
         // returns xm and Sm

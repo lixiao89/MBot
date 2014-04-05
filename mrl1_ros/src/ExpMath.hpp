@@ -49,7 +49,12 @@ namespace GroupMathSE{
 
         static Eigen::Matrix3d polarToSE2(double s);
 
-
+        // calculate the convolution of two SE2 Gaussians
+        static void convolutionSE2(Eigen::Matrix3d mu1,Eigen::Matrix3d mu2,Eigen::Matrix3d cov1,Eigen::Matrix3d cov2,Eigen::Matrix3d& mu_bar,Eigen::Matrix3d& cov_bar);
+ 
+ 
+       
+ 
     };
 }
 

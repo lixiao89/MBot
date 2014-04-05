@@ -6,6 +6,8 @@
 #include "std_msgs/String.h"
 #include "std_msgs/Float64.h"
 #include "sensor_msgs/JointState.h"
+#include "std_msgs/Header.h"
+#include "time.h"
 
 #include <sstream>
 #include <vector>
@@ -24,6 +26,7 @@ class JointEncoderSub{
        float encoderLeftPos;
        float encoderRightPos;
         
+       ros::Time currTime;
 
 
         //constructor
@@ -53,6 +56,10 @@ class JointEncoderSub{
         encoderLeftVel = jointState_msg->velocity[0];
         encoderRightVel = jointState_msg->velocity[1];
 
+        std_msgs::Header jointStateHeader;
+       jointStateHeader = jointState_msg->header;
+
+        currTime = jointStateHeader.stamp;
        // std::cout << encoderLeftVel << std::endl;
 	} 
 
