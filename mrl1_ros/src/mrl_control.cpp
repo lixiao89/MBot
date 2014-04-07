@@ -15,14 +15,20 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-  /* symbol x("x"), y("y");
-             ex foo = x+y/2;
-             ex bar = foo.subs(x==1);
-             ex foobar = bar.subs(y==1.2);
-             cout<< foobar<<endl;
 
-             double m = 1.29;
-             cout<<foobar+m<<endl;*/
+   /* symbol t("t");
+    ex f = 2*t+1;
+
+    double a = 0;
+    double b = 1;
+
+    double res;
+
+res = GroupMathSE::ExpMath::SimpsonIntegrate(t,f,4,b);
+
+cout<< res << endl;*/
+
+   
 
     Eigen::Matrix3d X;
  double Ei[3][3][3]=
@@ -65,7 +71,10 @@ int main(int argc, char **argv)
   
 // Initializes control for robot "mrl2"
   DistLocalization mctrl2(n,"/mrl2/laser/scan","/mrl2/left_wheel_controller/command","/mrl2/right_wheel_controller/command","/mrl2/poseEstPub","/mrl1/poseEstPub","/mrl2/joint_states");
- 
+
+
+
+
 
   ros::Rate loop_rate(40);
 
@@ -77,8 +86,8 @@ int main(int argc, char **argv)
         mctrl2.Explore();
 
 
-        mctrl1.expLocalization();
-        mctrl2.expLocalization();
+       mctrl1.expLocalization();
+       mctrl2.expLocalization();
 
         GTPub.posGTPublish();
         

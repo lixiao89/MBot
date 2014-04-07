@@ -224,32 +224,32 @@ namespace GroupMathSE{
 
          }
 
-         
+           
+// integration using the 3/8 simpson rule
+double ExpMath::SimpsonIntegrate(const ex& t,ex f,double a, double b)
+{
+    ex res;
+
+    double h, c, d;
+    h = (b-a)/8;
+    c = (2*a+b)/3;
+    d = (a+2*b)/3;
+
+    res = evalf(h*(f.subs(t==a) + 3*f.subs(t==c) + 3*f.subs(t==d) + f.subs(t==b)));
+
+   // res = evalf(f.subs(t==a));
+
+    double out;
+
+     if (is_a<numeric>(res)) 
+     {
+          out = ex_to<numeric>(res).to_double();
+     }
+
+    return out;
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 

@@ -6,9 +6,7 @@ std_msgs::Float64 DistLocalization::velocityPID(float velDesire, float currVel, 
     float i_error; // sum of errors over time
     float d_error; // difference b/w previous and curr proportional error
 
-    static float previous_error = 0;
-    static float integral_error = 0;
-
+    
     float p_out; // proportional component of output
     float i_out;
     float d_out;
@@ -110,6 +108,16 @@ void DistLocalization::moveSinasoidal()
         }
 
 
+    ros::Duration timeInterval = currTime - previousTime;
+
+
+    cout<<"Time interval" <<robot<<"is :"<<timeInterval<<endl;
+
+
+
+    previousTime = currTime;
+
+
        
 
          //fusion_with_sensor_noise(a_i, mu_i, cov_i, a_j, mu_j, cov_j, mu_m, cov_m, mu_i_bar, Sigma_i_bar);
@@ -122,9 +130,21 @@ void DistLocalization::moveSinasoidal()
 
     }
 
+
  void DistLocalization::SDEPrediction(float w1, float w2, Eigen::Matrix3d& mu, Eigen::Matrix3d& cov)
 {
+
+    ros::Duration timeInterval = currTime - previousTime;
+
+    cout<<"Time interval is:"<<timeInterval<<endl;
+
+    previousTime = currTime;
+
+
     float a,b,c;
+
+
+
    // mu = 1;
 }
 	

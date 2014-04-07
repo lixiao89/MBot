@@ -12,7 +12,6 @@
 #include "geometry_msgs/Pose2D.h"
 #include "NeighborInfoSub.hpp"
 #include "JointEncoderSub.hpp"
-#include "/usr/include/ginac/ginac.h"
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/LU>
@@ -24,7 +23,6 @@
 
 
 using namespace std;
-using namespace GiNaC;
 
 // Inherits from class "ProcessLaserScan"
 class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public JointEncoderSub{
@@ -40,7 +38,15 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
         ros::Publisher poseEstimate_;
         ros::NodeHandle nh_;
 
+        //used in function "SDEPrediction"
+        ros::Time previousTime;
 
+        // used in function "velocityPID"
+        float previous_error;
+        float integral_error;
+
+
+        std::string robot;
         // Constructor
         DistLocalization(ros::NodeHandle& nh,std::string laserTopic, std::string leftwheelcontrollertopic, std::string rightwheelcontrollertopic, std::string poseEstPubTopic, std::string poseEstSubTopic,std::string jointStateTopic):ProcessLaserScan(nh,laserTopic),NeighborInfoSub(nh,poseEstSubTopic),JointEncoderSub(nh,jointStateTopic)
         {
@@ -50,6 +56,14 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
             rightWheelPub_ = nh_.advertise<std_msgs::Float64>(rightwheelcontrollertopic, 1000);  
             
             poseEstimate_ = nh_.advertise<geometry_msgs::Pose2D>(poseEstPubTopic,1000);
+
+
+            robot = laserTopic;
+
+            previousTime = ros::Time::now();
+
+            previous_error = 0;
+            integral_error = 0;
         }
 
 
@@ -123,9 +137,6 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
         // outputs: predicted mean and covariance in SE2
         void SDEPrediction(float w1, float w2, Eigen::Matrix3d& mu, Eigen::Matrix3d& cov);
  
-  // integrate for covariance in the prediction step 
-        static double SimpsonIntegrate();
-
   
         // returns xi and Si
          void generate_Si(Eigen::Matrix3d Sigma_i, Eigen::Vector3d& xi, Eigen::Matrix3d& Si);       

@@ -1,11 +1,15 @@
 #ifndef EXPMATH_HPP_
 #define EXPMATH_HPP_
 
+#include "/usr/include/ginac/ginac.h"
+
 #include <eigen3/Eigen/Dense>
 #include <sstream>
 #include <vector>
 #include <iostream>
 #include <math.h>
+
+using namespace GiNaC;
 
 namespace GroupMathSE{
 
@@ -53,7 +57,11 @@ namespace GroupMathSE{
         static void convolutionSE2(Eigen::Matrix3d mu1,Eigen::Matrix3d mu2,Eigen::Matrix3d cov1,Eigen::Matrix3d cov2,Eigen::Matrix3d& mu_bar,Eigen::Matrix3d& cov_bar);
  
  
-       
+  // integrate for covariance in the prediction step 
+  // input: function defined by f, lower integration limit "a" and upper limit "b"
+      static double SimpsonIntegrate(const ex& t, ex f,double a, double b);
+
+      
  
     };
 }
