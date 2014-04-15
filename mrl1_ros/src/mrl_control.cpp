@@ -19,6 +19,7 @@ int main(int argc, char **argv)
    /* symbol t("t");
     ex f = 2*t+1;
 
+
     double a = 0;
     double b = 1;
 
@@ -65,18 +66,40 @@ cout<< res << endl;*/
   // used to publish the ground truth of the poses of the robots given by gazebo
   PositionGT GTPub(n,"/gazebo/model_states");
 
+  Eigen::Matrix3d a_i1, a_i2;
+
+  a_i1 << 1,0,0,
+          0,1,0,
+          0,0,1;
+
+  a_i2 << 1,0,0,
+          0,1,1,
+          0,0,1;
+
+
+
 // Initializes control for robot "mrl1"
 //inputs are: node handle, laser scan topic name, left wheel controller, right wheel controller, published self pose estimate, subscribed neighbor pose estimate
-  DistLocalization mctrl1(n,"/mrl1/laser/scan","/mrl1/left_wheel_controller/command","/mrl1/right_wheel_controller/command","/mrl1/poseEstPub","/mrl2/poseEstPub","/mrl1/joint_states");
+  DistLocalization mctrl1(n,a_i1,a_i2,"/mrl1/laser/scan","/mrl1/left_wheel_controller/command","/mrl1/right_wheel_controller/command","/mrl1/poseEstPub","/mrl2/poseEstPub","/mrl1/joint_states","/mrl1Pos","/mrl2Pos","/mrl1/estError");
+
   
 // Initializes control for robot "mrl2"
-  DistLocalization mctrl2(n,"/mrl2/laser/scan","/mrl2/left_wheel_controller/command","/mrl2/right_wheel_controller/command","/mrl2/poseEstPub","/mrl1/poseEstPub","/mrl2/joint_states");
+  DistLocalization mctrl2(n,a_i2,a_i1,"/mrl2/laser/scan","/mrl2/left_wheel_controller/command","/mrl2/right_wheel_controller/command","/mrl2/poseEstPub","/mrl1/poseEstPub","/mrl2/joint_states","/mrl2Pos","/mrl1Pos","/mrl2/estError");
 
 
 
+  ros::Rate loop_rate(10);
 
+/*for(int i=0;i<1;i++)
+{
+    mctrl1.Explore();
+    mctrl2.Explore();
+    ros::spinOnce();
+    loop_rate.sleep();
+   
 
-  ros::Rate loop_rate(40);
+}*/
+
 
   int count = 0;
     while (n.ok())

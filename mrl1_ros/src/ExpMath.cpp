@@ -3,6 +3,7 @@
 
 namespace GroupMathSE{
 
+    // X = xhat where x is exponential coordinate
     Eigen::Matrix3d ExpMath::SE2_ad(Eigen::Matrix3d X)
     {
         Eigen::Matrix2d M;
@@ -31,7 +32,7 @@ namespace GroupMathSE{
         Eigen::Vector2d t(g(1-1,3-1),g(2-1,3-1));
         Eigen::Matrix2d R;
 
-        R = M.block(0,0,2,2);
+        R = g.block(0,0,2,2);
 
         Eigen::Matrix3d Adg;
 
@@ -45,9 +46,9 @@ namespace GroupMathSE{
 
       Eigen::Matrix3d ExpMath::ExpToSE2(Eigen::Vector3d ep)
       {
-          double v1 = ep(1);
-          double v2 = ep(2);
-          double alpha = ep(3);
+          double v1 = ep(1-1);
+          double v2 = ep(2-1);
+          double alpha = ep(3-1);
 
           Eigen::Matrix2d R;
 
@@ -58,6 +59,7 @@ namespace GroupMathSE{
 
           tempM << sin(alpha), -(1-cos(alpha)),
                    (1-cos(alpha)), sin(alpha);
+
 
           tempM = (1/alpha)*tempM;
 
@@ -77,7 +79,12 @@ namespace GroupMathSE{
 
         Eigen::Vector3d ExpMath::SE2ToExp(Eigen::Matrix3d g)
         {
-            double alpha = atan2(g(2,1),g(2,2));
+            double alpha = atan2(g(2-1,1-1),g(2-1,2-1));
+
+            if(alpha == 0)
+            {
+                alpha = 0.00000000001;
+            }
 
             Eigen::Matrix2d tempM;
 
@@ -87,20 +94,25 @@ namespace GroupMathSE{
             tempM = (1/alpha)*tempM;
 
             Eigen::Vector2d t(g(1-1,3-1),g(2-1,3-1));
-            
+
+           
             Eigen::Vector2d v;
 
             v << tempM.inverse()*t;
 
-            Eigen::Vector3d ep(v(1),v(2),alpha);
-
-           return ep;  
+            Eigen::Vector3d ep(v(1-1),v(2-1),alpha);
+          return ep;  
         }
 
 
          Eigen::Vector3d ExpMath::SE2ToXYTheta(Eigen::Matrix3d g)
          {
               Eigen::Vector3d X(g(1-1,3-1),g(2-1,3-1), atan2(g(2-1,1-1),g(2-1,2-1)));
+
+            if(X(3-1)==0)
+            {
+                X(3-1) = 0.0000000001;
+            }
 
               return X;
 
@@ -165,20 +177,20 @@ namespace GroupMathSE{
                  double E_basis[3][3][3]=
                 {
                     {
+                        {0,0,1},
+                        {0,0,0},
+                        {0,0,0},
+                    },
+
+                    {
+                        {0,0,0},
+                        {0,0,1},
+                        {0,0,0},
+                    },
+
+                    {
                         {0,-1,0},
                         {1,0,0},
-                        {0,0,0},
-                    },
-
-                    {
-                        {0,0,1},
-                        {0,0,0},
-                        {0,0,0},
-                    },
-
-                    {
-                        {0,0,0},
-                        {0,0,1},
                         {0,0,0},
                     },
 
@@ -187,6 +199,7 @@ namespace GroupMathSE{
 
         Eigen::Matrix3d A,B,C,D,E,temp;
         temp = GroupMathSE::ExpMath::SE2_Adjoint(mu2.inverse());
+
         A =temp*cov1*temp.transpose();
         B = cov2;
 
@@ -201,17 +214,17 @@ namespace GroupMathSE{
             {
                 Eigen::Matrix3d Ei,Ej;
 
-                Ei = GroupMathSE::ExpMath::mapArray3D(E_basis,i);
-                Ej = GroupMathSE::ExpMath::mapArray3D(E_basis,j);
-
+                Ei = mapArray3D(E_basis,i);
+                Ej = mapArray3D(E_basis,j);
 
                 Eigen::Matrix3d adi,adj;
-                adi = GroupMathSE::ExpMath::SE2_ad(Ei);
-                adj = GroupMathSE::ExpMath::SE2_ad(Ej);
+                adi = SE2_ad(Ei);
+                adj = SE2_ad(Ej);
 
                 C = C + adi*B*adj.transpose()*A(i,j);
                 D = D + adi*adj*A(i,j)*B + (adi*adj*A(i,j)*B).transpose();
                 E = E + adi*adj*B(i,j)*A + (adi*adj*B(i,j)*A).transpose();
+
             }
         }
 
@@ -220,6 +233,7 @@ namespace GroupMathSE{
         E = E/12;
 
         cov_bar = A + B + C + D + E;
+
 
 
          }

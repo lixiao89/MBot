@@ -39,7 +39,8 @@ class JointEncoderSub{
             
             // initialize subscriber and publisher
             encoderSub_ = nh_.subscribe<sensor_msgs::JointState>(jointStateTopic, 1000, &JointEncoderSub::jointEncoderCallback,this); 
-
+            
+            currTime = ros::Time::now()+ros::Duration(0.08);
         }
 
         ~JointEncoderSub(void)

@@ -25,6 +25,11 @@ std_msgs::Float64 DistLocalization::velocityPID(float velDesire, float currVel, 
 
     output = p_out + i_out + d_out;
    
+    if(output > 15)
+    {
+        output = 3;
+    }
+
     //cout << output << endl;
 
     previous_error = p_error;
@@ -95,57 +100,195 @@ void DistLocalization::moveSinasoidal()
  // Main method to call
      void DistLocalization::expLocalization()
     { 
-        int minRangeIndex = 0;
-        float minRangeTemp = maxRange; 
+            
+       
+            // current pose of the robot
+            Eigen::Vector3d currPose;
+            currPose = ExpMath::SE2ToXYTheta(a_i);
+    
 
-        for(int i=0; i < rangeReadings.size();i++)
-        {
-            if(rangeReadings.at(i) < minRangeTemp)
-            {
-                    minRangeTemp = rangeReadings.at(i);
-                    minRangeIndex = i;
-            }
-        }
+            // variables used for the prediction step
+            Eigen::Matrix3d mu_pred_pre;
+            Eigen::Matrix3d cov_pred_pre;
 
+            Eigen::Matrix3d mu_pred_post;
+            Eigen::Matrix3d cov_pred_post;
 
-    ros::Duration timeInterval = currTime - previousTime;
+            // prediction step 1
+            this->SDEPrediction(w1, w2, mu_pred_pre, cov_pred_pre);
 
-
-    cout<<"Time interval" <<robot<<"is :"<<timeInterval<<endl;
-
-
-
-    previousTime = currTime;
+//cout<<"here!"<<robot<<endl;
+//cout<<mu_pred_pre<<endl;
 
 
+           // prediction setp 2
+            
+            ExpMath::convolutionSE2(a_i, mu_pred_pre,cov_i,cov_pred_pre,mu_pred_post,cov_pred_post);
+
+// ------------- finding the measurement matrix mu_m -----------
+
+if(!isnan(subscribedX) && !isnan(subscribedY) && !isnan(subscribedTheta))
+ {
+       
+        float y_relative = minRange*cos(minAngle);
+        float x_relative = minRange*sin(minAngle);
+        float theta_relative = subscribedTheta - currPose(3-1);
+
+        Eigen::Vector3d relativePose(x_relative,y_relative,theta_relative);
+
+
+        Eigen::Matrix3d mu_m;
+        mu_m = ExpMath::XYThetaToSE2(relativePose);
+
+//---------------------------------------------
        
 
-         //fusion_with_sensor_noise(a_i, mu_i, cov_i, a_j, mu_j, cov_j, mu_m, cov_m, mu_i_bar, Sigma_i_bar);
+// calculate the SE2 representation of position of neighbor
 
-        posEst.x = 1;
-        posEst.y = 1;
-        posEst.theta = 1;
+        Eigen::Vector3d neighborPos(subscribedX,subscribedY,subscribedTheta);
 
-        poseEstimate_.publish(posEst);
+        Eigen::Matrix3d mu_j;
+        mu_j = ExpMath::XYThetaToSE2(neighborPos);
+
+
+        Eigen::Matrix3d cov_j;
+        cov_j = subscribedCov;
+
+        // update step
+        Eigen::Matrix3d I;
+        I = Eigen::MatrixXd::Identity(3,3);
+
+
+         this->fusion_with_sensor_noise(I, mu_pred_post, cov_pred_post, a_j, mu_j, cov_j, mu_m, cov_m, mu_i_bar, Sigma_i_bar);
+
+
+        Eigen::Vector3d X_i_bar;
+        X_i_bar = ExpMath::SE2ToXYTheta(mu_i_bar);
+
+        posEsti.poseEst.x = X_i_bar(1-1);
+        posEsti.poseEst.y = X_i_bar(2-1);
+        posEsti.poseEst.theta = X_i_bar(3-1);
+
+        estError.x = X_i_bar(1-1) - selfGT(1-1);
+         estError.y = X_i_bar(2-1) - selfGT(2-1);
+         estError.theta = X_i_bar(3-1) - selfGT(3-1);
+
+
+
+        for(int i =0; i < 3; i++)
+            for(int j=0; j<3; j++)
+        {
+             posEsti.cov[i] = Sigma_i_bar(i,j);
+        }
+       
+
+
+        a_i = mu_i_bar;
+        cov_i = Sigma_i_bar;
+ }
+else
+//if(true)
+{
+        Eigen::Vector3d X_i_bar;
+        X_i_bar = ExpMath::SE2ToXYTheta(mu_pred_post);
+
+        posEsti.poseEst.x = X_i_bar(1-1);
+        posEsti.poseEst.y = X_i_bar(2-1);
+        posEsti.poseEst.theta = X_i_bar(3-1);
+        
+         estError.x = X_i_bar(1-1) - selfGT(1-1);
+         estError.y = X_i_bar(2-1) - selfGT(2-1);
+         estError.theta = X_i_bar(3-1) - selfGT(3-1);
+
+
+
+        for(int i =0; i < 3; i++)
+            for(int j=0; j<3; j++)
+        {
+             posEsti.cov[i] = cov_pred_post(i,j);
+        }
+       
+
+
+        a_i = mu_pred_post;
+        cov_i = cov_pred_post;
+
+} 
+            w1 = encoderLeftVel;
+            w2 = encoderRightVel;
+        
+
+        estError_.publish(estError);
+        poseEstimate_.publish(posEsti);
+        
 
     }
 
 
  void DistLocalization::SDEPrediction(float w1, float w2, Eigen::Matrix3d& mu, Eigen::Matrix3d& cov)
 {
+    double l = 0.25;
+    double r = 0.08;
+    double D = 2;
 
-    ros::Duration timeInterval = currTime - previousTime;
+    ros::Duration dt = currTime - previousTime;
 
-    cout<<"Time interval is:"<<timeInterval<<endl;
+    double ddt = dt.toSec();
+    ddt = abs(ddt);
+// ----------------------  Calculating mu --------------------------------------
+
+    double mu11 = 1 - (pow(r,2)*pow(ddt,2)*pow(w1-w2,2)/(2*pow(l,2)));
+    double mu12 = r*ddt*(w1-w2)/l;
+    double mu13 = r*ddt*(w1+w2)/2;
+    double mu23 = pow(r,2)*pow(ddt,2)*(pow(w1,2)-pow(w2,2))/(4*l);
+
+    mu << mu11,-mu12, mu13,
+          mu12, mu11, mu23,
+          0,0,1;
+
+
+// ---------------------- Calculating cov -----------------------------------
+
+    symbol t("t");
+
+    float c1 = pow(w1,2) - pow(w2,2);
+    ex c8 = 2*pow(r,2)*pow(t,2)*w1*w2;
+    ex c9 = pow(r,2)*pow(t,2)*pow(w2,2);
+    ex c10 = pow(r,2)*pow(t,2)*pow(w1,2);
+    ex c6 = 2*pow(l,2) - c10 + c8 - c9;
+    ex c7 = 4*pow(l,4) + pow(r,4)*pow(t,4)*pow(w1,4) - 4*pow(r,4)*pow(t,4)*pow(w1,3)*w2 + 6*pow(r,4)*pow(t,4)*pow(w1,2)*pow(w2,2) - 4*pow(r,4)*pow(t,4)*w1*pow(w2,3) + pow(r,4)*pow(t,4)*pow(w2,4);
+     //ex c7 = 4*pow(l,4) - 4*pow(r,4)*pow(t,4)*w1*pow(w2,3);
+ 
+    ex c2 = 2*pow(l,2) + c10 - c8 + c9;
+    ex c3 = (4*pow(l,5)*pow(r,3)*t*D*(w1-w2)*c6)/pow(c7,2);
+    ex c4 = (4*pow(l,3)*pow(r,3)*t*D*(w1+w2))/(l*c7);
+    ex c5 = l*pow(c7,2);
+
+
+   // ex c11 = (2*pow(l,4)*D*pow(r,2)*pow(c6,2)/pow(c7,2)) + (l*pow(r,6)*pow(t,4)*D*(w1+w2)*c1*(w1-w2)*pow(c2,2)/(2*l*pow(c7,2)));
+     ex c11 = (2*pow(l,4)*D*pow(r,2)*pow(c6,2)/pow(c7,2)) + (l*pow(r,6)*pow(t,4)*D*(w1+w2)*c1*(w1-w2)*pow(c2,2)/(2*l*pow(c7,2)));
+ 
+    ex c12 = -c3 + (2*pow(l,4)*pow(r,5)*pow(t,3)*D*(w1+w2)*c1*c2/c5);
+    ex c22 = (8*pow(l,6)*pow(r,2)*pow(t,2)*D*pow(r,2)*(pow(w1,2)*l+pow(w2,2)*l+l*pow(w1,2)+l*pow(w2,2)))/c5;
+    ex c13 = pow(r,2)*pow(t,2)*D*pow(r,2)*c1*c2/(l*c7);
+    ex c23 = c4;
+    double c33 = 2*D*pow(r,2)/pow(l,2);
 
     previousTime = currTime;
 
+    //----------
+    double res11 = ExpMath::SimpsonIntegrate(t,c11,0,ddt);
+    double res12 = ExpMath::SimpsonIntegrate(t,c12,0,ddt);
+    double res13 = ExpMath::SimpsonIntegrate(t,c13,0,ddt);
+    double res22 = ExpMath::SimpsonIntegrate(t,c22,0,ddt);
+    double res23 = ExpMath::SimpsonIntegrate(t,c23,0,ddt);
+    double res33 = c33*ddt;
 
-    float a,b,c;
+    cov << res11, res12, res13,
+           res12, res22, res23,
+           res13, res23, res33;
 
 
-
-   // mu = 1;
 }
 	
 
@@ -169,21 +312,23 @@ void DistLocalization::generate_Sm(Eigen::Matrix3d m_im,Eigen::Matrix3d mu_m,Eig
 {
     Eigen::Matrix3d qm;
     qm = m_im*mu_m.inverse()*a_m.inverse()*a_i*mu_i;
-
+ 
     xm = GroupMathSE::ExpMath::SE2ToExp(qm);
+// cout<<"here!"<<endl;
+//cout<<qm<<endl;
+
 
     Eigen::Matrix3d Xm;
     Xm = GroupMathSE::ExpMath::wedge(xm);
 
     Eigen::Matrix3d gamma_m;
     gamma_m = (Eigen::MatrixXd::Identity(3,3)+0.5*GroupMathSE::ExpMath::SE2_ad(Xm));
-
+ 
     Eigen::Matrix3d temp;
     temp = GroupMathSE::ExpMath::SE2_Adjoint(m_im);
-    temp = temp.inverse();
+    temp = temp.inverse().eval();
 
     Sm = gamma_m.transpose()*temp.transpose()*Sigma_m.inverse()*temp*gamma_m;
-
 }
 
 
@@ -193,22 +338,31 @@ void DistLocalization::Fusion(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Ma
     Eigen::Matrix3d Si;
     Si = cov_i.transpose();
 
+
     Eigen::Vector3d xm;
     Eigen::Matrix3d Sm;
 
-    generate_Sm(Mim,MU_m,A_m,a_i,mu_i,COV_m,xm,Sm);
+   this->generate_Sm(Mim,MU_m,A_m,a_i,mu_i,COV_m,xm,Sm);
 
     Eigen::Vector3d xbar;
     xbar = Sm.inverse()*(Si*xi+Sm*xm);
+
+//cout<<Si<<endl<<xi<<endl<<Sm<<endl<<xm<<endl;
+//cout<<Sm.inverse()*Si*xi<<endl<<Sm.inverse()*Sm*xm<<endl;
+
     Eigen::Matrix3d Xbar;
     Xbar = GroupMathSE::ExpMath::wedge(xbar);
+
 
     Eigen::Matrix3d gamma_bar;
 
     gamma_bar = (Eigen::MatrixXd::Identity(3,3)+0.5*GroupMathSE::ExpMath::SE2_ad(Xbar));
 
     Sigma_i_bar = gamma_bar*Sm.inverse()*gamma_bar.transpose();
-    mu_i_bar = mu_i*(-Xbar.exp());
+    mu_i_bar = mu_i*((-Xbar).exp());
+
+
+
 }
 
 
@@ -228,41 +382,29 @@ void DistLocalization::Fusion(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Ma
     // --------------- Perform the Convolution-like Calculation ------------------
 
     // Basis elements for SE(2)
-    Eigen::Matrix3d E1,E2,E3;
 
 
     double E_basis[3][3][3]=
     {
+        {
+            {0,0,1},
+            {0,0,0},
+            {0,0,0},
+        },
+
+        {
+            {0,0,0},
+            {0,0,1},
+            {0,0,0},
+        },
+
         {
             {0,-1,0},
             {1,0,0},
             {0,0,0},
         },
 
-        {
-            {0,0,1},
-            {0,0,0},
-            {0,0,0},
-        },
-
-        {
-            {0,0,0},
-            {0,0,1},
-            {0,0,0},
-        },
-
     };
-   /* E1 << 0,-1,0,
-          1,0,0,
-          0,0,0;
-
-    E2 << 0,0,1,
-          0,0,0,
-          0,0,0;
-
-    E3 << 0,0,0,
-          0,0,1,
-          0,0,0;*/
 
 
     Eigen::Matrix3d mu2;
@@ -306,7 +448,7 @@ void DistLocalization::Fusion(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Ma
     cov_nin = A + B + C + D + E;
 
     
-    Fusion(a_i,mu_i,cov_i,a_j,mu_j,cov_nin,mu_m,mu_i_bar,Sigma_i_bar);
+    this->Fusion(a_i,mu_i,cov_i,a_j,mu_j,cov_nin,mu_m,mu_i_bar,Sigma_i_bar);
     
 }
 

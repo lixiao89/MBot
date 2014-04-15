@@ -6,11 +6,14 @@
 #include "std_msgs/String.h"
 #include "std_msgs/Float64.h"
 #include "sensor_msgs/LaserScan.h"
-
+#include <eigen3/Eigen/Dense>
+#include <math.h>
 #include <sstream>
 #include <vector>
 #include <iostream>
 #include <tf/transform_broadcaster.h>
+
+using namespace std;
 
 class ProcessLaserScan{ 
 	
@@ -23,7 +26,11 @@ class ProcessLaserScan{
         std::vector<float> rangeReadings;
 	    std::vector<float> angleReadings;
 	
+
         float maxRange;
+        float minRange;
+
+        float minAngle;
         // number of laser scans
         int scanNum;
         
@@ -32,13 +39,19 @@ class ProcessLaserScan{
         ProcessLaserScan();
 
         // overloading constructor
-        ProcessLaserScan(ros::NodeHandle& nh,std::string laserTopic)
+        ProcessLaserScan(ros::NodeHandle& nh,Eigen::Matrix3d initialPose, Eigen::Matrix3d neighborIP,std::string laserTopic)
         {
             nh_ = nh;
             
             // initialize subscriber and publisher
             scanSub_ = nh_.subscribe<sensor_msgs::LaserScan>(laserTopic, 1000, &ProcessLaserScan::laserScanCallback,this); 
+            Eigen::Matrix3d relPose;
 
+            relPose = initialPose.inverse()*neighborIP;
+
+            minAngle = atan2(relPose(2-1,1-1),relPose(2-1,2-1));
+
+            minRange = sqrt(pow(relPose(1-1,3-1),2)+pow(relPose(2-1,3-1),2));
         }
 
         ~ProcessLaserScan(void)
@@ -56,6 +69,7 @@ class ProcessLaserScan{
 	  size_t num_ranges = Lscan_msg->ranges.size();
       scanNum = num_ranges;
 
+
       maxRange = Lscan_msg->range_max;
 
 	  int x;
@@ -64,29 +78,27 @@ class ProcessLaserScan{
 	 
 	 
 	  for (x = 0; x < num_ranges; x++)
-	   {
-		   
+	   { 
+          
 		rangeReadings.push_back(Lscan_msg->ranges[x]);
 		angleReadings.push_back(angleReadings.back()+Lscan_msg->angle_increment);
-       // std::cout<<Lscan_msg->angle_increment<<std::endl;
+
+         if(Lscan_msg->ranges[x] <= minRange)
+           {
+               minRange = rangeReadings.back();
+               minAngle = angleReadings.back();
+                
+           }
+		   
 		}
 		angleReadings.pop_back();
+
+ //       cout<< "minRange:"<<minRange<<","<<"minAngle:"<<minAngle<<endl;
+
 	} 
+
+
 
 };      
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-

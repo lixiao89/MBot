@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mrl1_control)
 
+## Compiler flags
+
+project(mrl1_control)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -8,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   #ros_control
   #ros_controllers
 )
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -29,6 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
 ##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
 ## * In the file package.xml:
 ##   * add a build_depend and a run_depend tag for each package in MSG_DEP_SET
+
 ##   * If MSG_DEP_SET isn't empty the following dependencies might have been
 ##     pulled in transitively but can be declared for certainty nonetheless:
 ##     * add a build_depend tag for "message_generation"

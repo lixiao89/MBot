@@ -48,8 +48,8 @@
         <node name="spawn_mrl2" pkg="gazebo_ros" type="spawn_model"
               args="-param robot_description
                     -urdf
-	            -x 1
-                    -y 0
+	            -x 0
+                    -y 1
                     -z 0
                     -model mrl2"
               respawn="false" output="screen" />
