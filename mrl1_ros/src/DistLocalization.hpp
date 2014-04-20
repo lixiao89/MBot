@@ -58,10 +58,20 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
         float w1;
         float w2;
         
+        // For distEKF-----
+        float Vim,Wim;
+
+        Eigen::Matrix3d stateCovCurr;
+        
+        Eigen::Matrix2d processNoiseCov;
+        //------
+
         Eigen::Vector3d neighborGT;
         Eigen::Vector3d selfGT;
 
         geometry_msgs::Pose2D estError;
+
+        Eigen::Vector3d poseCurr;
 
     public:
         std_msgs::Float64 leftEffort;
@@ -102,6 +112,8 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
 
             
             neighborGT = ExpMath::SE2ToXYTheta(neighborIP);
+             
+
             selfGT = ExpMath::SE2ToXYTheta(initialPose);
             robot = laserTopic;
 
@@ -112,18 +124,29 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
 
             a_i = initialPose;
 
-            cov_i << 0.25,0,0,
-                     0,0.25,0,
-                     0,0,0.25;
+            poseCurr = ExpMath::SE2ToXYTheta(initialPose);
+            
+            // state initial covariance for expLocalization
+            cov_i << 0,0,0,
+                     0,0,0,
+                     0,0,0;
+            // state covariance initialize for distEKF
+            stateCovCurr = cov_i;
 
+            processNoiseCov << 0.05,0,
+                               0,0.05;
+                               
 
             a_j << 1,0,0,
                    0,1,0,
                    0,0,1;
-
+           
+            // measurement noise covariance    
             cov_m << 0.0001, 0, 0,
                      0, 0.0001, 0,
                      0, 0, 0.0001;
+
+
             w1 = 0.01;
             w2 = 0.01;
 
@@ -158,6 +181,17 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
 
 
             theta = tf::getYaw(temp);
+
+            if(isnan(theta))
+            {
+                theta = 0.0000000001;
+            }
+
+//cout<<"theta:"<<theta<<endl;
+//cout<<"x:"<<neighborGT_msg->position.x<<endl;
+//cout<<"y:"<<neighborGT_msg->position.y<<endl;
+
+
             neighborGT << neighborGT_msg->position.x,neighborGT_msg->position.y,theta;
         }
 
@@ -185,7 +219,13 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
 
 
             theta = tf::getYaw(temp);
-
+            if(isnan(theta))
+            {
+                theta = 0.000000001;
+            }
+//cout<<"theta:"<<theta<<endl;
+//cout<<"x:"<<selfGT_msg->position.x<<endl;
+//cout<<"y:"<<selfGT_msg->position.y<<endl;
 
             selfGT << selfGT_msg->position.x,selfGT_msg->position.y,theta;
         }
@@ -224,7 +264,7 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
                leftWheelPub_.publish(leftEffort);
                rightWheelPub_.publish(rightEffort);
  
-                cout<< leftEffort.data<<","<<rightEffort.data<<endl;
+               // cout<< leftEffort.data<<","<<rightEffort.data<<endl;
                 //cout<< encoderLeftVel << endl;
             }
 
@@ -240,7 +280,11 @@ class DistLocalization : public ProcessLaserScan, public NeighborInfoSub, public
         // Main method to call
         void distEKF();
        
-       
+       // prediction 
+       void distEKFPred(Eigen::Vector3d& poseCurr,Eigen::Matrix3d& stateCovCurr, double Vim, double Wim);
+
+       //update
+       void distEKFUpdate(Eigen::Vector3d& poseCurr,Eigen::Matrix3d& stateCovCurr,Eigen::Vector3d z);
 
         
         

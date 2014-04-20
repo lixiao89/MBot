@@ -96,6 +96,7 @@ void DistLocalization::distEKF()
     double l = 0.25;
     double r = 0.08;
   
+
         posEsti.poseEst.x = poseCurr(1-1);
         posEsti.poseEst.y = poseCurr(2-1);
         posEsti.poseEst.theta = poseCurr(3-1);
@@ -104,12 +105,11 @@ void DistLocalization::distEKF()
          //estError.y = X_i_bar(2-1) - selfGT(2-1);
          //estError.theta = X_i_bar(3-1) - selfGT(3-1);
 
-        int k=0;
+
         for(int i =0; i < 3; i++)
             for(int j=0; j<3; j++)
         {
-             posEsti.cov[k] = stateCovCurr(i,j);
-             k=k+1;
+             posEsti.cov[i] = stateCovCurr(i,j);
         }
        
 
@@ -196,12 +196,7 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
                  sin(poseCurr(3-1)), cos(poseCurr(3-1)),0,
                  0,0,1;
 
-        Eigen::Vector2d v_self(poseCurr(1-1),poseCurr(2-1)), v_diff, v_temp;
-
-        Eigen::Vector2d v_sub(subscribedX,subscribedY);
-        
-        //using real neighbor position
-        //Eigen::Vector2d v_sub(neighborGT(1-1),neighborGT(2-1));
+        Eigen::Vector2d v_self(poseCurr(1-1),poseCurr(2-1)),v_sub(subscribedX,subscribedY), v_diff, v_temp;
 
         v_diff = v_sub - v_self;
         v_temp = J*v_diff;
@@ -219,10 +214,6 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
 
 
         Eigen::Vector3d v_neighbor(subscribedX,subscribedY,subscribedTheta);
-
-// using real neighbor position
-        //Eigen::Vector3d v_neighbor(neighborGT(1-1),neighborGT(2-1),neighborGT(3-1));
-
 
         //update pose
         poseCurr = (I-stateCovCurr*tH.transpose()*tS.inverse())*poseCurr + stateCovCurr*tH.transpose()*tS.inverse()*(v_neighbor-Gamma*z);
@@ -246,7 +237,6 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
             Eigen::Vector3d currPose;
             currPose = ExpMath::SE2ToXYTheta(a_i);
     
-cout<<currPose(3-1)<<endl;
 
         posEsti.poseEst.x = currPose(1-1);
         posEsti.poseEst.y = currPose(2-1);
@@ -257,18 +247,21 @@ cout<<currPose(3-1)<<endl;
          estError.theta = currPose(3-1) - selfGT(3-1);
 
 
-        int k=0;
+
         for(int i =0; i < 3; i++)
             for(int j=0; j<3; j++)
         {
-             posEsti.cov[k] = cov_i(i,j);
-             k=k+1;
+             posEsti.cov[i] = cov_i(i,j);
         }
-      
+       
 
         estError_.publish(estError);
         poseEstimate_.publish(posEsti);
         
+
+
+
+
 
             // variables used for the prediction step
             Eigen::Matrix3d mu_pred_pre;
@@ -279,27 +272,25 @@ cout<<currPose(3-1)<<endl;
 
             // prediction step 1
             this->SDEPrediction(w1, w2, mu_pred_pre, cov_pred_pre);
-           
+
+//cout<<"here!"<<robot<<endl;
+//cout<<mu_pred_pre<<endl;
+
+
            // prediction setp 2
             
             ExpMath::convolutionSE2(a_i, mu_pred_pre,cov_i,cov_pred_pre,mu_pred_post,cov_pred_post);
 
 // ------------- finding the measurement matrix mu_m -----------
 
-//if(!isnan(subscribedX) && !isnan(subscribedY) && !isnan(subscribedTheta))
+if(!isnan(subscribedX) && !isnan(subscribedY) && !isnan(subscribedTheta))
  {
        
         float y_relative = minRange*cos(minAngle);
         float x_relative = minRange*sin(minAngle);
         float theta_relative = subscribedTheta - currPose(3-1);
 
-
-
         Eigen::Vector3d relativePose(x_relative,y_relative,theta_relative);
- 
-        //using real values
-       // Eigen::Vector3d relativePose(neighborGT(1-1)-selfGT(1-1),neighborGT(2-1)-selfGT(2-1),neighborGT(3-1)-selfGT(3-1));
-
 
 
         Eigen::Matrix3d mu_m;
@@ -311,13 +302,6 @@ cout<<currPose(3-1)<<endl;
 // calculate the SE2 representation of position of neighbor
 
         Eigen::Vector3d neighborPos(subscribedX,subscribedY,subscribedTheta);
-        
-        // using real neighbor position
-       // Eigen::Vector3d  neighborPos(neighborGT(1-1),neighborGT(2-1),neighborGT(3-1)+3.14159/2);
-
-
-
-        //cout<<neighborPos(3-1)<<endl;
 
         Eigen::Matrix3d mu_j;
         mu_j = ExpMath::XYThetaToSE2(neighborPos);
@@ -325,13 +309,6 @@ cout<<currPose(3-1)<<endl;
 
         Eigen::Matrix3d cov_j;
         cov_j = subscribedCov;
-       
-       // cout<<subscribedCov<<endl;
-
-       // using real neighbor position
-      // cov_j << 0,0,0,
-      //          0,0,0,
-      //          0,0,0;
 
         // update step
         Eigen::Matrix3d I;
@@ -344,30 +321,61 @@ cout<<currPose(3-1)<<endl;
         Eigen::Vector3d X_i_bar;
         X_i_bar = ExpMath::SE2ToXYTheta(mu_i_bar);
 
+      /*  posEsti.poseEst.x = X_i_bar(1-1);
+        posEsti.poseEst.y = X_i_bar(2-1);
+        posEsti.poseEst.theta = X_i_bar(3-1);
+
+        estError.x = X_i_bar(1-1) - selfGT(1-1);
+         estError.y = X_i_bar(2-1) - selfGT(2-1);
+         estError.theta = X_i_bar(3-1) - selfGT(3-1);
+
+
+
+        for(int i =0; i < 3; i++)
+            for(int j=0; j<3; j++)
+        {
+             posEsti.cov[i] = Sigma_i_bar(i,j);
+        }*/
+       
+
+
         a_i = mu_i_bar;
         cov_i = Sigma_i_bar;
-
  }
-/*else
+else
 //if(true)
 {
         Eigen::Vector3d X_i_bar;
         X_i_bar = ExpMath::SE2ToXYTheta(mu_pred_post);
+
+       /* posEsti.poseEst.x = X_i_bar(1-1);
+        posEsti.poseEst.y = X_i_bar(2-1);
+        posEsti.poseEst.theta = X_i_bar(3-1);
+        
+         estError.x = X_i_bar(1-1) - selfGT(1-1);
+         estError.y = X_i_bar(2-1) - selfGT(2-1);
+         estError.theta = X_i_bar(3-1) - selfGT(3-1);
+
+
+
+        for(int i =0; i < 3; i++)
+            for(int j=0; j<3; j++)
+        {
+             posEsti.cov[i] = cov_pred_post(i,j);
+        }*/
        
 
 
         a_i = mu_pred_post;
         cov_i = cov_pred_post;
 
-} */
-           // w1 = encoderLeftVel;
-           // w2 = encoderRightVel;
+} 
+            w1 = encoderLeftVel;
+            w2 = encoderRightVel;
         
-            w1 = 20;
-            w2 = 0.5;
 
-            //cout<<w1<<","<<w2<<endl;
-            //
+        estError_.publish(estError);
+        poseEstimate_.publish(posEsti);
         
 
     }
@@ -377,7 +385,7 @@ cout<<currPose(3-1)<<endl;
 {
     double l = 0.25;
     double r = 0.08;
-    double D = 1;
+    double D = 2;
 
     ros::Duration dt = currTime - previousTime;
 
@@ -462,6 +470,9 @@ void DistLocalization::generate_Sm(Eigen::Matrix3d m_im,Eigen::Matrix3d mu_m,Eig
     qm = m_im*mu_m.inverse()*a_m.inverse()*a_i*mu_i;
  
     xm = GroupMathSE::ExpMath::SE2ToExp(qm);
+// cout<<"here!"<<endl;
+//cout<<qm<<endl;
+
 
     Eigen::Matrix3d Xm;
     Xm = GroupMathSE::ExpMath::wedge(xm);
@@ -481,14 +492,13 @@ void DistLocalization::Fusion(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Ma
 {
     Eigen::Vector3d xi(0,0,0);
     Eigen::Matrix3d Si;
-    Si = cov_i.inverse();
+    Si = cov_i.transpose();
 
 
     Eigen::Vector3d xm;
     Eigen::Matrix3d Sm;
 
    this->generate_Sm(Mim,MU_m,A_m,a_i,mu_i,COV_m,xm,Sm);
-
 
     Eigen::Vector3d xbar;
     xbar = Sm.inverse()*(Si*xi+Sm*xm);
@@ -504,8 +514,10 @@ void DistLocalization::Fusion(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Ma
 
     gamma_bar = (Eigen::MatrixXd::Identity(3,3)+0.5*GroupMathSE::ExpMath::SE2_ad(Xbar));
 
-    Sigma_i_bar = gamma_bar*(Si+Sm).inverse()*gamma_bar.transpose();
+    Sigma_i_bar = gamma_bar*Sm.inverse()*gamma_bar.transpose();
     mu_i_bar = mu_i*((-Xbar).exp());
+
+
 
 }
 
@@ -568,8 +580,6 @@ void DistLocalization::Fusion(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Ma
     {
         for(int j = 0; j < 3; j++)
         {
-
-
             Eigen::Matrix3d Ei,Ej;
 
             Ei = GroupMathSE::ExpMath::mapArray3D(E_basis,i);

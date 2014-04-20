@@ -88,7 +88,8 @@ cout<< res << endl;*/
 
 
 
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(12);
+
 
 /*for(int i=0;i<1;i++)
 {
@@ -104,13 +105,19 @@ cout<< res << endl;*/
   int count = 0;
     while (n.ok())
      {
+
         //control motion of robot "mrl1"
         mctrl1.Explore();
         mctrl2.Explore();
 
 
-       mctrl1.expLocalization();
-       mctrl2.expLocalization();
+     // mctrl1.expLocalization();
+     // mctrl2.expLocalization();
+
+
+      mctrl1.distEKF();
+      mctrl2.distEKF();
+
 
         GTPub.posGTPublish();
         
