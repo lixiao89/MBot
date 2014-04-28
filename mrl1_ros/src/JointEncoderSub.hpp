@@ -36,11 +36,12 @@ class JointEncoderSub{
         JointEncoderSub(ros::NodeHandle& nh,std::string jointStateTopic)
         {
             nh_ = nh;
-            
+            encoderLeftVel = 0;
+            encoderRightVel = 0;
             // initialize subscriber and publisher
             encoderSub_ = nh_.subscribe<sensor_msgs::JointState>(jointStateTopic, 1000, &JointEncoderSub::jointEncoderCallback,this); 
             
-            currTime = ros::Time::now()+ros::Duration(0.08);
+            currTime = ros::Time::now();
         }
 
         ~JointEncoderSub(void)
@@ -56,6 +57,16 @@ class JointEncoderSub{
 
         encoderLeftVel = jointState_msg->velocity[0];
         encoderRightVel = jointState_msg->velocity[1];
+
+
+          if(encoderLeftVel > 10 || encoderRightVel >10 || encoderLeftVel < -10 || encoderRightVel < -10)
+            {
+                encoderLeftVel = 0.001;
+                encoderRightVel = 0.001;
+            }
+
+
+
 
         std_msgs::Header jointStateHeader;
        jointStateHeader = jointState_msg->header;

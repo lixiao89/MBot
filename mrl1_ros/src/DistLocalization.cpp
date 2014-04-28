@@ -25,7 +25,7 @@ std_msgs::Float64 DistLocalization::velocityPID(float velDesire, float currVel, 
 
     output = p_out + i_out + d_out;
    
-    if(output > 15)
+    if(output > 15 || output < -15)
     {
         output = 3;
     }
@@ -91,18 +91,29 @@ void DistLocalization::moveSinasoidal()
 //
 
 void DistLocalization::distEKF()
-
 {
-    double l = 0.25;
+
+        if(w1<0.01 || w2<0.01)
+        {
+            
+            w2 = encoderLeftVel;
+            w1 = encoderRightVel;
+            return;
+        }
+
+
+    double l = 0.30;
     double r = 0.08;
   
+cout<<robot<<":"<<w1<<","<<w2<<endl;
+cout<<robot<<":"<<poseCurr(1-1)<<","<<poseCurr(2-1)<<","<<poseCurr(3-1)<<endl;
+cout<<robot<<"selfGT:"<<selfGT(0)<<","<<selfGT(1)<<","<<selfGT(2)<<endl;
+cout<<robot<<"neighborGT:"<<neighborGT(0)<<","<<neighborGT(1)<<","<<neighborGT(2)<<endl;
+
         posEsti.poseEst.x = poseCurr(1-1);
         posEsti.poseEst.y = poseCurr(2-1);
         posEsti.poseEst.theta = poseCurr(3-1);
         
-         //estError.x = X_i_bar(1-1) - selfGT(1-1);
-         //estError.y = X_i_bar(2-1) - selfGT(2-1);
-         //estError.theta = X_i_bar(3-1) - selfGT(3-1);
 
         int k=0;
         for(int i =0; i < 3; i++)
@@ -111,38 +122,64 @@ void DistLocalization::distEKF()
              posEsti.cov[k] = stateCovCurr(i,j);
              k=k+1;
         }
-       
 
-
-
-      //estError_.publish(estError);
       poseEstimate_.publish(posEsti);
-       
 
 
+
+
+if(w1 == 0 && w2 == 0 )
+{
     Vim = (w1+w2)*r/2;
-    Wim = (w2-w1)*r/2;
+    Wim = (w1-w2)*r/l;
 
 //predict
 this->distEKFPred(poseCurr,stateCovCurr, Vim, Wim);
 
 
-// obtain sensor measurement
-float y_relative = minRange*cos(minAngle);
-float x_relative = minRange*sin(minAngle);
-float theta_relative = subscribedTheta - poseCurr(3-1);
+}
+else
+{
+
+              
+
+
+    Vim = (w1+w2)*r/2;
+    Wim = (w1-w2)*r/l;
+
+//predict
+this->distEKFPred(poseCurr,stateCovCurr, Vim, Wim);
+
+
+
+          Eigen::Vector3d relativePose;
+ 
+
+        float minRangeAd = minRange + 0.061;
+        float minAngleAd = minAngle +0.01;
+        float x_relative = minRangeAd*cos(minAngleAd);
+        float y_relative = minRangeAd*sin(minAngleAd);
+
+
+        float pi = 3.14159265359;
+        float dtheta = pi-(pi-abs(minAngle)+(pi-abs(nminAngle)));
+        float theta_relative = copysign(dtheta,minAngle);
 
 
 Eigen::Vector3d z(x_relative,y_relative,theta_relative);
-
+//cout<<robot<<"z:"<<z(0)<<","<<z(1)<<","<<z(2)<<endl;
 
 
 
 //update
 this->distEKFUpdate(poseCurr, stateCovCurr,z);
 
-      w1 = encoderLeftVel;
-      w2 = encoderRightVel;
+}
+
+      w2 = encoderLeftVel;
+      w1 = encoderRightVel;
+
+
 
        }
 
@@ -154,6 +191,12 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
     double ddt = dt.toSec();
     ddt = abs(ddt);
     
+    if((ddt > 0 && ddt < 0.005) || ddt > 1)
+    {
+        ddt = 1/freq;
+    }
+
+
 
    Eigen::Matrix3d Phi;
    Eigen::MatrixXd G(3,2);
@@ -184,6 +227,11 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
 // update
  void DistLocalization::distEKFUpdate(Eigen::Vector3d& poseCurr,Eigen::Matrix3d& stateCovCurr,Eigen::Vector3d z)
 {
+        // use real neighbor position (GPS etc)
+       // subscribedX = neighborGT(1-1);
+       // subscribedY = neighborGT(2-1);
+       // subscribedTheta = neighborGT(3-1)-3.14159265359/2;
+
         Eigen::Matrix2d C,J;
         C << cos(poseCurr(3-1)),-sin(poseCurr(3-1)),
              sin(poseCurr(3-1)), cos(poseCurr(3-1));
@@ -239,14 +287,32 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
 
  // Main method to call
      void DistLocalization::expLocalization()
-    { 
+    {
+        if(w1<0.01 || w2<0.01)
+        {
             
-       
+            w2 = encoderLeftVel;
+            w1 = encoderRightVel;
+            return;
+        }
+
+       ros::Duration dt = currTime - previousTime;
+
+        double ddt = dt.toSec();
+        ddt = abs(ddt);
+
+        if((ddt > 0 && ddt < 0.005) || ddt > 1)
+        {
+            ddt = 1/freq;
+        } 
+
+
+            cout<<robot<<":"<<w1<<","<<w2<<endl;
+            
             // current pose of the robot
-            Eigen::Vector3d currPose;
             currPose = ExpMath::SE2ToXYTheta(a_i);
     
-cout<<currPose(3-1)<<endl;
+//cout<<robot<<":"<<"pose:"<<currPose(0)<<","<<currPose(1)<<endl;
 
         posEsti.poseEst.x = currPose(1-1);
         posEsti.poseEst.y = currPose(2-1);
@@ -278,27 +344,39 @@ cout<<currPose(3-1)<<endl;
             Eigen::Matrix3d cov_pred_post;
 
             // prediction step 1
+            //
             this->SDEPrediction(w1, w2, mu_pred_pre, cov_pred_pre);
-           
+ 
+//double t1;
+//t1 = atan2(mu_pred_pre(2-1,1-1),mu_pred_pre(2-1,2-1));
+//cout<<robot<<"t1="<<t1<<endl;
+
+
            // prediction setp 2
             
             ExpMath::convolutionSE2(a_i, mu_pred_pre,cov_i,cov_pred_pre,mu_pred_post,cov_pred_post);
-
+//double t2;
+//t2 = atan2(mu_pred_post(2-1,1-1),mu_pred_post(2-1,2-1));
+//cout<<robot<<"t2="<<t2<<endl;
+           
 // ------------- finding the measurement matrix mu_m -----------
 
-//if(!isnan(subscribedX) && !isnan(subscribedY) && !isnan(subscribedTheta))
- {
-       
-        float y_relative = minRange*cos(minAngle);
-        float x_relative = minRange*sin(minAngle);
-        float theta_relative = subscribedTheta - currPose(3-1);
-
-
-
-        Eigen::Vector3d relativePose(x_relative,y_relative,theta_relative);
+   {
+         Eigen::Vector3d relativePose;
  
-        //using real values
-       // Eigen::Vector3d relativePose(neighborGT(1-1)-selfGT(1-1),neighborGT(2-1)-selfGT(2-1),neighborGT(3-1)-selfGT(3-1));
+
+        float minRangeAd = minRange + 0.061;
+        float minAngleAd = minAngle - 0.05;
+        float x_relative = minRangeAd*cos(minAngleAd);
+        float y_relative = minRangeAd*sin(minAngleAd);
+
+        float pi = 3.14159265359;
+        float dtheta = pi-(pi-abs(minAngle)+(pi-abs(nminAngle)));
+        float theta_relative = copysign(dtheta,minAngle);
+
+        relativePose<< x_relative,y_relative,theta_relative;
+
+       cout<<robot <<":"<<relativePose(0)<<","<<relativePose(1)<<","<<relativePose(2)<<endl;
 
 
 
@@ -308,16 +386,21 @@ cout<<currPose(3-1)<<endl;
 //---------------------------------------------
        
 
-// calculate the SE2 representation of position of neighbor
+// calculate the SE2 representation of position of neighborPos
+        Eigen::Vector3d neighborPos;
 
-        Eigen::Vector3d neighborPos(subscribedX,subscribedY,subscribedTheta);
-        
-        // using real neighbor position
-       // Eigen::Vector3d  neighborPos(neighborGT(1-1),neighborGT(2-1),neighborGT(3-1)+3.14159/2);
+        {
+
+        // use real neighbor position
+       // subscribedX = neighborGT(1-1);
+       // subscribedY = neighborGT(2-1);
+       // subscribedTheta = neighborGT(3-1)-3.14159265359/2;
+
+        neighborPos<<subscribedX,subscribedY,subscribedTheta;
+        }
 
 
-
-        //cout<<neighborPos(3-1)<<endl;
+//cout<<robot<<":"<<neighborPos(0)<<","<<neighborPos(1)<<","<<neighborPos(2)<<endl;
 
         Eigen::Matrix3d mu_j;
         mu_j = ExpMath::XYThetaToSE2(neighborPos);
@@ -326,12 +409,6 @@ cout<<currPose(3-1)<<endl;
         Eigen::Matrix3d cov_j;
         cov_j = subscribedCov;
        
-       // cout<<subscribedCov<<endl;
-
-       // using real neighbor position
-      // cov_j << 0,0,0,
-      //          0,0,0,
-      //          0,0,0;
 
         // update step
         Eigen::Matrix3d I;
@@ -339,6 +416,9 @@ cout<<currPose(3-1)<<endl;
 
 
          this->fusion_with_sensor_noise(I, mu_pred_post, cov_pred_post, a_j, mu_j, cov_j, mu_m, cov_m, mu_i_bar, Sigma_i_bar);
+//double t3;
+//t3 = atan2(mu_i_bar(2-1,1-1),mu_i_bar(2-1,2-1));
+//cout<<"t3="<<t3<<endl;
 
 
         Eigen::Vector3d X_i_bar;
@@ -348,9 +428,7 @@ cout<<currPose(3-1)<<endl;
         cov_i = Sigma_i_bar;
 
  }
-/*else
-//if(true)
-{
+/*{
         Eigen::Vector3d X_i_bar;
         X_i_bar = ExpMath::SE2ToXYTheta(mu_pred_post);
        
@@ -359,14 +437,11 @@ cout<<currPose(3-1)<<endl;
         a_i = mu_pred_post;
         cov_i = cov_pred_post;
 
-} */
-           // w1 = encoderLeftVel;
-           // w2 = encoderRightVel;
-        
-            w1 = 20;
-            w2 = 0.5;
+}*/
+            w2 = encoderLeftVel;
+            w1 = encoderRightVel;
+            
 
-            //cout<<w1<<","<<w2<<endl;
             //
         
 
@@ -375,7 +450,7 @@ cout<<currPose(3-1)<<endl;
 
  void DistLocalization::SDEPrediction(float w1, float w2, Eigen::Matrix3d& mu, Eigen::Matrix3d& cov)
 {
-    double l = 0.25;
+    double l = 0.3;
     double r = 0.08;
     double D = 1;
 
@@ -383,16 +458,36 @@ cout<<currPose(3-1)<<endl;
 
     double ddt = dt.toSec();
     ddt = abs(ddt);
+
+    if((ddt > 0 && ddt < 0.005) || ddt > 1)
+    {
+        ddt = 1/freq;
+    }
+
+    
+    cout<<"ddt:"<<ddt<<endl;
+    /*if(abs(dcurrTime - dpreviousTime) < 0.005 || abs(dcurrTime - dpreviousTime) >1)
+    {
+        dpreviousTime = dcurrTime - 0.5;
+    }*/
+
 // ----------------------  Calculating mu --------------------------------------
 
-    double mu11 = 1 - (pow(r,2)*pow(ddt,2)*pow(w1-w2,2)/(2*pow(l,2)));
+    /*double mu11 = 1 - (pow(r,2)*pow(ddt,2)*pow(w1-w2,2)/(2*pow(l,2)));
     double mu12 = r*ddt*(w1-w2)/l;
     double mu13 = r*ddt*(w1+w2)/2;
     double mu23 = pow(r,2)*pow(ddt,2)*(pow(w1,2)-pow(w2,2))/(4*l);
 
     mu << mu11,-mu12, mu13,
           mu12, mu11, mu23,
-          0,0,1;
+          0,0,1;*/
+
+    Eigen::Vector3d h(r*ddt*(w1+w2)/2,0,r*ddt*(w1-w2)/l);
+
+    Eigen::Matrix3d hhat;
+    hhat = ExpMath::wedge(h);
+
+    mu = hhat.exp();
 
 
 // ---------------------- Calculating cov -----------------------------------
@@ -435,9 +530,9 @@ cout<<currPose(3-1)<<endl;
     cov << res11, res12, res13,
            res12, res22, res23,
            res13, res23, res33;
+    }
 
 
-}
 	
 
 	    // returns xi and Si
@@ -491,7 +586,7 @@ void DistLocalization::Fusion(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Ma
 
 
     Eigen::Vector3d xbar;
-    xbar = Sm.inverse()*(Si*xi+Sm*xm);
+    xbar = (Sm+Si).inverse()*(Si*xi+Sm*xm);
 
 //cout<<Si<<endl<<xi<<endl<<Sm<<endl<<xm<<endl;
 //cout<<Sm.inverse()*Si*xi<<endl<<Sm.inverse()*Sm*xm<<endl;
@@ -505,7 +600,14 @@ void DistLocalization::Fusion(Eigen::Matrix3d a_i,Eigen::Matrix3d mu_i,Eigen::Ma
     gamma_bar = (Eigen::MatrixXd::Identity(3,3)+0.5*GroupMathSE::ExpMath::SE2_ad(Xbar));
 
     Sigma_i_bar = gamma_bar*(Si+Sm).inverse()*gamma_bar.transpose();
+   
+    Eigen::Matrix3d temp1, temp2;
+    temp1 = (-Xbar).exp();
+    temp2 = Eigen::MatrixXd::Identity(3,3)-Xbar+0.5*Xbar*Xbar-0.1666667*Xbar*Xbar*Xbar+0.04166667*Xbar*Xbar*Xbar*Xbar;
+  
     mu_i_bar = mu_i*((-Xbar).exp());
+
+    int i;
 
 }
 
