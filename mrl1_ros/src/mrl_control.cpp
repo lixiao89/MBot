@@ -120,22 +120,22 @@ const char *pathexp2 = "/home/lixiao/Desktop/MBot/src/MBot/mrl1_ros/data/Exp2.tx
         mctrl2.Explore();
 
  
-     // mctrl1.expLocalization();
-     // mctrl2.expLocalization();
+      mctrl1.expLocalization();
+      mctrl2.expLocalization();
      
-    //  ofsExp1<<mctrl1.currTime<<","<<mctrl1.currPose(0)<<","<<mctrl1.currPose(1)<<","<<mctrl1.currPose(2)<<","<<mctrl1.selfGT(0)<<","<<mctrl1.selfGT(1)<<","<<mctrl1.selfGT(2)<<endl;
+      ofsExp1<<mctrl1.currTime<<","<<mctrl1.currPose(0)<<","<<mctrl1.currPose(1)<<","<<mctrl1.currPose(2)<<","<<mctrl1.selfGT(0)<<","<<mctrl1.selfGT(1)<<","<<mctrl1.selfGT(2)<<endl;
 
 
-      // ofsExp2<<mctrl2.currTime<<","<<mctrl2.currPose(0)<<","<<mctrl2.currPose(1)<<","<<mctrl2.currPose(2)<<","<<mctrl2.selfGT(0)<<","<<mctrl2.selfGT(1)<<","<<mctrl2.selfGT(2)<<endl;
+       ofsExp2<<mctrl2.currTime<<","<<mctrl2.currPose(0)<<","<<mctrl2.currPose(1)<<","<<mctrl2.currPose(2)<<","<<mctrl2.selfGT(0)<<","<<mctrl2.selfGT(1)<<","<<mctrl2.selfGT(2)<<endl;
 
 
 
-     mctrl1.distEKF();
-     mctrl2.distEKF();
+    // mctrl1.distEKF();
+    //  mctrl2.distEKF();
 
-ofsEKF1<<mctrl1.currTime<<","<<mctrl1.poseCurr(0)<<","<<mctrl1.poseCurr(1)<<","<<mctrl1.poseCurr(2)<<","<<mctrl1.selfGT(0)<<","<<mctrl1.selfGT(1)<<","<<mctrl1.selfGT(2)<<endl;
+//ofsEKF1<<mctrl1.currTime<<","<<mctrl1.poseCurr(0)<<","<<mctrl1.poseCurr(1)<<","<<mctrl1.poseCurr(2)<<","<<mctrl1.selfGT(0)<<","<<mctrl1.selfGT(1)<<","<<mctrl1.selfGT(2)<<endl;
 
-ofsEKF2<<mctrl2.currTime<<","<<mctrl2.poseCurr(0)<<","<<mctrl2.poseCurr(1)<<","<<mctrl2.poseCurr(2)<<","<<mctrl2.selfGT(0)<<","<<mctrl2.selfGT(1)<<","<<mctrl2.selfGT(2)<<endl;
+//ofsEKF2<<mctrl2.currTime<<","<<mctrl2.poseCurr(0)<<","<<mctrl2.poseCurr(1)<<","<<mctrl2.poseCurr(2)<<","<<mctrl2.selfGT(0)<<","<<mctrl2.selfGT(1)<<","<<mctrl2.selfGT(2)<<endl;
 
 
 

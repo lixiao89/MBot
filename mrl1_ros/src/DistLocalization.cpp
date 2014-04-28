@@ -25,10 +25,10 @@ std_msgs::Float64 DistLocalization::velocityPID(float velDesire, float currVel, 
 
     output = p_out + i_out + d_out;
    
-    if(output > 15 || output < -15)
-    {
-        output = 3;
-    }
+   // if(output > 15 || output < -15)
+   // {
+    //    output = 3;
+   // }
 
     //cout << output << endl;
 
@@ -129,6 +129,7 @@ cout<<robot<<"neighborGT:"<<neighborGT(0)<<","<<neighborGT(1)<<","<<neighborGT(2
 
 
 if(w1 == 0 && w2 == 0 )
+
 {
     Vim = (w1+w2)*r/2;
     Wim = (w1-w2)*r/l;
@@ -155,8 +156,8 @@ this->distEKFPred(poseCurr,stateCovCurr, Vim, Wim);
           Eigen::Vector3d relativePose;
  
 
-        float minRangeAd = minRange + 0.061;
-        float minAngleAd = minAngle +0.01;
+        float minRangeAd = minRange + 0.03;
+        float minAngleAd = minAngle +0.037;
         float x_relative = minRangeAd*cos(minAngleAd);
         float y_relative = minRangeAd*sin(minAngleAd);
 
@@ -365,8 +366,8 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
          Eigen::Vector3d relativePose;
  
 
-        float minRangeAd = minRange + 0.061;
-        float minAngleAd = minAngle - 0.05;
+        float minRangeAd = minRange + 0.03;
+        float minAngleAd = minAngle - 0.037;
         float x_relative = minRangeAd*cos(minAngleAd);
         float y_relative = minRangeAd*sin(minAngleAd);
 

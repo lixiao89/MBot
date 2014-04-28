@@ -9,12 +9,12 @@ expdata2 = load('Exp2.txt');
 
 
 subplot(2,1,1)
-plot(expdata1(5:row1,2),expdata1(5:row1,3),'r.')
+plot(expdata1(5:row1,2),expdata1(5:row1,3),'r-')
 hold on
 plot(expdata1(5:row1,5),expdata1(5:row1,6))
 
 subplot(2,1,2)
-plot(expdata2(5:row2,2),expdata2(5:row2,3),'r.')
+plot(expdata2(5:row2,2),expdata2(5:row2,3),'r-')
 hold on
 plot(expdata2(5:row2,5),expdata2(5:row2,6))
 
@@ -30,12 +30,12 @@ ekfdata2 = load('EKF2.txt');
 
 
 subplot(2,1,1)
-plot(ekfdata1(5:row1,2),ekfdata1(5:row1,3),'r.')
+plot(ekfdata1(5:row1,2),ekfdata1(5:row1,3),'r-')
 hold on
 plot(ekfdata1(5:row1,5),ekfdata1(5:row1,6))
 
 subplot(2,1,2)
-plot(ekfdata2(5:row2,2),ekfdata2(5:row2,3),'r.')
+plot(ekfdata2(5:row2,2),ekfdata2(5:row2,3),'r-')
 hold on
 plot(ekfdata2(5:row2,5),ekfdata2(5:row2,6))
 

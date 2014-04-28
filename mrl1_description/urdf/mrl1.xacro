@@ -303,6 +303,7 @@
     <material>Gazebo/black</material>
      <mu1>132.5</mu1>
      <mu2>132.5</mu2>
+
      <dampingFactor>0.08</dampingFactor>
   </gazebo>
 

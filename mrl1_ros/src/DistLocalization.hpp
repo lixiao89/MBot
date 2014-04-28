@@ -268,12 +268,39 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
             double leftVelDes;
             double rightVelDes;
 
-            leftVelDes = 0.3*(abs(sin(currTime.toSec()))+0.05);
+            double t = currTime.toSec();
+           // double tempLeft, tempRight;
 
-            rightVelDes = 0.3*(abs(cos(currTime.toSec()))+0.05);
+           // tempLeft = 0.6*(abs(sin(currTime.toSec()))+0.05);
 
+           // tempRight = 0.6*(abs(cos(currTime.toSec()))+0.05);
+            
+
+            if(t < 15)
+
+            {
+                leftVelDes = 0.4;
+                rightVelDes = 0.4;
+            }
+            else if(t >= 15)
+            {
+                leftVelDes = 0.1;
+                rightVelDes = 1;
+
+            }
+           /* else if(t >=50)
+            {
+                leftVelDes = 1;
+                rightVelDes = 0.1;
+            }*/
+            //leftVelDes = pow(tempLeft,2);
+            //rightVelDes = tempRight;
+
+            
             leftEffort = this->velocityPID(leftVelDes,encoderLeftVel,0.5,0.4,0.2);
-                rightEffort = this->velocityPID(rightVelDes,encoderRightVel,0.5,0.4,0.2);
+                
+            
+            rightEffort = this->velocityPID(rightVelDes,encoderRightVel,0.5,0.4,0.2);
 
 
         }       
