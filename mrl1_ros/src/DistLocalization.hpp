@@ -13,6 +13,7 @@
 #include "geometry_msgs/Pose2D.h"
 #include "geometry_msgs/Pose.h"
 #include "NeighborInfoSub.hpp"
+#include "NeighborInfoSubEKF.hpp"
 #include "JointEncoderSub.hpp"
 #include "mrl1_ros/ExpL.h"
 #include "tf/transform_datatypes.h"
@@ -31,13 +32,13 @@ using namespace std;
 using namespace GroupMathSE;
 
 // Inherits from class "ProcessLaserScan"
-class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserScan, public NeighborInfoSub, public JointEncoderSub{
+class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserScan, public NeighborInfoSub, public NeighborInfoSubEKF,public JointEncoderSub{
 
     public:
  //private:
         //used in function "SDEPrediction"
         ros::Time previousTime;
-
+        ros::Time previousTimeEKF;
         double freq;
 
         // used in function "velocityPID"
@@ -46,9 +47,13 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
 //----------- ExpLocalization Member Variables ----------
         //initial position used in "expLocalization"
         Eigen::Matrix3d a_i;
+        Eigen::Matrix3d a_iDR;
         Eigen::Vector3d currPose;
         Eigen::Matrix3d mu_i;
         Eigen::Matrix3d cov_i;
+        Eigen::Matrix3d cov_iDR;
+        Eigen::Vector3d poseDR;
+
 
         Eigen::Matrix3d a_j;
         //Eigen::Matrix3d mu_j;
@@ -84,12 +89,14 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
         std_msgs::Float64 leftEffort;
         std_msgs::Float64 rightEffort;
         mrl1_ros::ExpL posEsti;
+        mrl1_ros::ExpL posEstiEKF;
         geometry_msgs::Point rqtEst;
 
         ros::Publisher leftWheelPub_;
         ros::Publisher rightWheelPub_;
        
         ros::Publisher poseEstimate_;
+        ros::Publisher poseEstimateEKF_;
         ros::Publisher rqtEst_;
         ros::NodeHandle nh_;
    
@@ -99,8 +106,10 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
 
         std::string robot;
 
+
+        double dcov_m;
         // Constructor
-        DistLocalization(ros::NodeHandle& nh, Eigen::Matrix3d initialPose,Eigen::Matrix3d neighborIP,std::string laserTopic,std::string neighborLaserTopic,std::string leftwheelcontrollertopic, std::string rightwheelcontrollertopic, std::string poseEstPubTopic, std::string poseEstSubTopic,std::string jointStateTopic,std::string selfGTTopic,std::string neighborGTTopic,std::string errorTopic):ProcessLaserScan(nh,initialPose,neighborIP,laserTopic),ProcessNeighborLaserScan(nh,initialPose,neighborIP,neighborLaserTopic),NeighborInfoSub(nh,neighborIP,poseEstSubTopic),JointEncoderSub(nh,jointStateTopic)
+        DistLocalization(ros::NodeHandle& nh, Eigen::Matrix3d initialPose,Eigen::Matrix3d neighborIP,std::string laserTopic,std::string neighborLaserTopic,std::string leftwheelcontrollertopic, std::string rightwheelcontrollertopic, std::string poseEstPubTopic, std::string poseEstPubTopicEKF,std::string poseEstSubTopic,std::string poseEstSubTopicEKF,std::string jointStateTopic,std::string selfGTTopic,std::string neighborGTTopic,std::string errorTopic):ProcessLaserScan(nh,initialPose,neighborIP,laserTopic),ProcessNeighborLaserScan(nh,initialPose,neighborIP,neighborLaserTopic),NeighborInfoSub(nh,neighborIP,poseEstSubTopic),NeighborInfoSubEKF(nh,neighborIP,poseEstSubTopicEKF),JointEncoderSub(nh,jointStateTopic)
         {
             nh_ = nh;
 
@@ -110,6 +119,9 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
             rightWheelPub_ = nh_.advertise<std_msgs::Float64>(rightwheelcontrollertopic, 1000);  
             
             poseEstimate_ = nh_.advertise<mrl1_ros::ExpL>(poseEstPubTopic,1000);
+
+            poseEstimateEKF_ = nh_.advertise<mrl1_ros::ExpL>(poseEstPubTopicEKF,1000);
+
 
 
             estError_ = nh_.advertise<geometry_msgs::Pose2D>(errorTopic,1000);
@@ -124,6 +136,8 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
              neighborIP_ = neighborIP;
              initialPose_ = initialPose;
             selfGT = ExpMath::SE2ToXYTheta(initialPose);
+            poseDR = selfGT;
+            
             robot = laserTopic;
 
             previousTime = ros::Time::now();
@@ -132,14 +146,20 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
             integral_error = 0;
 
             a_i = initialPose;
+            a_iDR = initialPose;
 
             poseCurr = ExpMath::SE2ToXYTheta(initialPose);
             currPose = poseCurr;    
             // state initial covariance for expLocalization
             // larger value expL respond to updates slower, too small value expL insensitive to measurement updates
             cov_i << 4,0,0,
+                     0,1,0,
+                     0,0,4;
+
+            cov_iDR << 4,0,0,
                      0,4,0,
                      0,0,4;
+
             // state covariance initialize for distEKF
             stateCovCurr = cov_i;
 
@@ -153,12 +173,13 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
                    0,1,0,
                    0,0,1;
 
+            dcov_m = 1;
            
             // measurement noise covariance    
             // larger value follows closer at the beginning but diverges faster
-            cov_m << 2, 0, 0,
-                     0, 2, 0,
-                     0, 0, 2;
+            cov_m << 1, 0, 0,
+                     0, 1, 0,
+                     0, 0, 1;
 
 
             w1 = 0;

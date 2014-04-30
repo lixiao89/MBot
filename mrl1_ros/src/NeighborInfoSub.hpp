@@ -45,7 +45,7 @@ class NeighborInfoSub{
             subscribedY = coord(2-1);
             subscribedTheta = coord(3-1);
 
-            subscribedCov = 0.1*Eigen::MatrixXd::Identity(3,3);
+            subscribedCov = 4*Eigen::MatrixXd::Identity(3,3);
         }
 
         ~NeighborInfoSub(void)

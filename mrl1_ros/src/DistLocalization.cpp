@@ -105,44 +105,23 @@ void DistLocalization::distEKF()
     double l = 0.30;
     double r = 0.08;
   
-cout<<robot<<":"<<w1<<","<<w2<<endl;
-cout<<robot<<":"<<poseCurr(1-1)<<","<<poseCurr(2-1)<<","<<poseCurr(3-1)<<endl;
-cout<<robot<<"selfGT:"<<selfGT(0)<<","<<selfGT(1)<<","<<selfGT(2)<<endl;
-cout<<robot<<"neighborGT:"<<neighborGT(0)<<","<<neighborGT(1)<<","<<neighborGT(2)<<endl;
+cout<<robot<<"(EKF):"<<w1<<","<<w2<<endl;
+cout<<robot<<"(EKF):"<<poseCurr(1-1)<<","<<poseCurr(2-1)<<","<<poseCurr(3-1)<<endl;
 
-        posEsti.poseEst.x = poseCurr(1-1);
-        posEsti.poseEst.y = poseCurr(2-1);
-        posEsti.poseEst.theta = poseCurr(3-1);
+        posEstiEKF.poseEst.x = poseCurr(1-1);
+        posEstiEKF.poseEst.y = poseCurr(2-1);
+        posEstiEKF.poseEst.theta = poseCurr(3-1);
         
 
         int k=0;
         for(int i =0; i < 3; i++)
             for(int j=0; j<3; j++)
         {
-             posEsti.cov[k] = stateCovCurr(i,j);
+             posEstiEKF.cov[k] = stateCovCurr(i,j);
              k=k+1;
         }
 
-      poseEstimate_.publish(posEsti);
-
-
-
-
-if(w1 == 0 && w2 == 0 )
-
-{
-    Vim = (w1+w2)*r/2;
-    Wim = (w1-w2)*r/l;
-
-//predict
-this->distEKFPred(poseCurr,stateCovCurr, Vim, Wim);
-
-
-}
-else
-{
-
-              
+      poseEstimateEKF_.publish(posEstiEKF);
 
 
     Vim = (w1+w2)*r/2;
@@ -175,19 +154,20 @@ Eigen::Vector3d z(x_relative,y_relative,theta_relative);
 //update
 this->distEKFUpdate(poseCurr, stateCovCurr,z);
 
-}
 
       w2 = encoderLeftVel;
       w1 = encoderRightVel;
 
-
+        cov_m << dcov_m,0,0,
+                 0,dcov_m,0,
+                 0,0,dcov_m;
 
        }
 
   // prediction 
        void DistLocalization::distEKFPred(Eigen::Vector3d& poseCurr,Eigen::Matrix3d& stateCovCurr, double Vim, double Wim)
 {
-    ros::Duration dt = currTime - previousTime;
+    ros::Duration dt = currTime - previousTimeEKF;
 
     double ddt = dt.toSec();
     ddt = abs(ddt);
@@ -221,7 +201,7 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
       poseCurr(2-1) = poseCurr(2-1)+Vim*ddt*sin(poseCurr(3-1));
       poseCurr(3-1) = poseCurr(3-1)+Wim*ddt;
 
-      previousTime = currTime;
+      previousTimeEKF = currTime;
    }
 
 
@@ -247,10 +227,8 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
 
         Eigen::Vector2d v_self(poseCurr(1-1),poseCurr(2-1)), v_diff, v_temp;
 
-        Eigen::Vector2d v_sub(subscribedX,subscribedY);
+        Eigen::Vector2d v_sub(subscribedXEKF,subscribedYEKF);
         
-        //using real neighbor position
-        //Eigen::Vector2d v_sub(neighborGT(1-1),neighborGT(2-1));
 
         v_diff = v_sub - v_self;
         v_temp = J*v_diff;
@@ -264,10 +242,10 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
         Eigen::Matrix3d tS, tR, I ;
         I = Eigen::MatrixXd::Identity(3,3);
         tR = Gamma*cov_m*Gamma.transpose();
-        tS = tH*stateCovCurr*tH.transpose()+subscribedCov+tR;
+        tS = tH*stateCovCurr*tH.transpose()+subscribedCovEKF+tR;
 
 
-        Eigen::Vector3d v_neighbor(subscribedX,subscribedY,subscribedTheta);
+        Eigen::Vector3d v_neighbor(subscribedXEKF,subscribedYEKF,subscribedThetaEKF);
 
 // using real neighbor position
         //Eigen::Vector3d v_neighbor(neighborGT(1-1),neighborGT(2-1),neighborGT(3-1));
@@ -343,6 +321,9 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
 
             Eigen::Matrix3d mu_pred_post;
             Eigen::Matrix3d cov_pred_post;
+            Eigen::Matrix3d mu_pred_postDR;
+            Eigen::Matrix3d cov_pred_postDR;
+
 
             // prediction step 1
             //
@@ -359,7 +340,17 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
 //double t2;
 //t2 = atan2(mu_pred_post(2-1,1-1),mu_pred_post(2-1,2-1));
 //cout<<robot<<"t2="<<t2<<endl;
-           
+ 
+ ExpMath::convolutionSE2(a_iDR, mu_pred_pre,cov_iDR,cov_pred_pre,mu_pred_postDR,cov_pred_postDR);
+
+
+// calculate the Dead Reckoning pose
+
+            poseDR = ExpMath::SE2ToXYTheta(a_iDR);
+
+            a_iDR = mu_pred_postDR;
+            cov_iDR = cov_pred_postDR;
+
 // ------------- finding the measurement matrix mu_m -----------
 
    {
@@ -429,8 +420,9 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
         cov_i = Sigma_i_bar;
 
  }
-/*{
-        Eigen::Vector3d X_i_bar;
+
+  /* {
+         Eigen::Vector3d X_i_bar;
         X_i_bar = ExpMath::SE2ToXYTheta(mu_pred_post);
        
 
@@ -438,13 +430,15 @@ this->distEKFUpdate(poseCurr, stateCovCurr,z);
         a_i = mu_pred_post;
         cov_i = cov_pred_post;
 
-}*/
+    }*/
             w2 = encoderLeftVel;
             w1 = encoderRightVel;
             
 
             //
-        
+        cov_m << dcov_m,0,0,
+                 0,dcov_m,0,
+                 0,0,dcov_m;
 
     }
 
