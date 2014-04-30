@@ -27,6 +27,12 @@
         <!-- push robot_description to factory and spawn robot in gazebo -->
         <node name="spawn_mrl1" pkg="gazebo_ros" type="spawn_model"
               args="-param robot_description
+                    -x 1
+                    -y 1
+                    -z 0
+                    -R 0
+                    -P 0
+                    -Y 2.09
                     -urdf
                     -model mrl1"
               respawn="false" output="screen" />
@@ -48,9 +54,12 @@
         <node name="spawn_mrl2" pkg="gazebo_ros" type="spawn_model"
               args="-param robot_description
                     -urdf
-	            -x 1
-                    -y 1
+	                -x 1
+                    -y 2
                     -z 0
+                    -R 0
+                    -P 0
+                    -Y 2.09
                     -model mrl2"
               respawn="false" output="screen" />
               
@@ -71,14 +80,14 @@
         <param name="robot_description" command="$(find xacro)/xacro.py '$(find mrl1_description)/urdf/mrl3.xacro'" />
         
         <!-- push robot_description to factory and spawn robot in gazebo -->
-        <node name="spawn_mrl3" pkg="gazebo_ros" type="spawn_model"
+        <!--node name="spawn_mrl3" pkg="gazebo_ros" type="spawn_model"
               args="-param robot_description
                     -urdf
                     -x -1
                     -y -1
                     -z 0
                     -model mrl3"
-              respawn="false" output="screen" />
+              respawn="false" output="screen" /-->
               
         <!-- start robot state publisher -->
         <!--node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher3" output="screen" >

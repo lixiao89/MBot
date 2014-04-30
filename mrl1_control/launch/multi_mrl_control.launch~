@@ -56,16 +56,16 @@
 <group ns="mrl3">
 
   <!-- load the controllers -->
-  <node name="mrl3_controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+  <!--node name="mrl3_controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
 	output="screen" args="joint_state_controller
 			      left_wheel_controller
-			      right_wheel_controller"/>
+			      right_wheel_controller"/-->
 
   <!-- convert joint states to TF transforms for rviz, etc -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+  !--<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
 	respawn="false" output="screen">
     <remap from="/joint_states" to="/mrl3/joint_states" />
-  </node>
+  </node-->
 
 </group>
 
@@ -77,7 +77,7 @@
   <!--node name="mrl4_controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
 	output="screen" args="joint_state_controller
 			      left_wheel_controller
-			      right_wheel_controller"/-->
+			      right_wheel_controller"/>
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
 	respawn="false" output="screen">

@@ -7,7 +7,7 @@ Testing SLAM packages on ros
 1. hector slam (deprecated for catkin)
 2. GSLAM
 
-20120225
+20140225
 ---------
 1. added SLAM C++ Packages
 1)DP-SLAM
@@ -20,6 +20,24 @@ Testing SLAM packages on ros
 7)KLD-Sampling
 8)People2D 
 ————————
-2. for depthCloud orientation problem (shown in rive) using libgazebo_ros_openni_kinect.so, modify gazebo_ros_openni_kinect.cpp following
+2. for depthCloud orientation problem (shown in rivz) using libgazebo_ros_openni_kinect.so, modify gazebo_ros_openni_kinect.cpp following
 http://answers.gazebosim.org/question/4266/gazebo-15-libgazebo_openni_kinectso-pointcloud/
+
+
+20140312
+----------------
+1. Install Rocon
+------
+1) install rocon according to "http://wiki.ros.org/rocon/Tutorials/hydro/Installation"
+2) installed libavahi-client-dev, libavahi-core-dev, as per the package.xml in package zerocon_avahi,navigation
+3) install packages zero_conf_avahi_suit, zeroconf_msgs, yujin_maps,kobuki_softapps, kobuki_msgs,robot_pose_publisher
+4) install uuid_msgs, then catkin_make
+
+------
+2. Install multimaster_fkie
+----------------------
+
+3. Moved "ros_external_pkgs" to workspace "MBot"
+
+
 

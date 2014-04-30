@@ -1,0 +1,9 @@
+<launch>
+<node name="mrl_control"
+    pkg="mrl1_ros"
+    type="mrl_control"
+    respawn="false" output="screen"
+   launch-prefix="xterm -e gdb --args">
+</node>
+</launch>
+

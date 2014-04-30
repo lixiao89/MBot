@@ -9,11 +9,14 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  eigen
+  message_generation
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg)
+#find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -46,11 +49,12 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
+add_message_files(
+   FILES
+   ExpL.msg
 #   Message1.msg
 #   Message2.msg
-# )
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,10 +71,11 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   std_msgs
+   geometry_msgs
+ )
 
 ###################################
 ## catkin specific configuration ##
@@ -84,7 +89,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES mrl1_ros
-#  CATKIN_DEPENDS genmsg roscpp rospy std_msgs
+  CATKIN_DEPENDS genmsg roscpp rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -119,7 +124,7 @@ add_dependencies(mrl_control ${catkin_EXPORTED_TARGETS})
 #   ${catkin_LIBRARIES}
 # )
 
-target_link_libraries(mrl_control ${catkin_LIBRARIES})
+target_link_libraries(mrl_control ${catkin_LIBRARIES} ginac)
 
 #############
 ## Install ##
