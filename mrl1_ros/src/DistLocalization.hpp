@@ -31,89 +31,118 @@
 using namespace std;
 using namespace GroupMathSE;
 
-// Inherits from class "ProcessLaserScan"
 class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserScan, public NeighborInfoSub, public NeighborInfoSubEKF,public JointEncoderSub{
 
     public:
- //private:
-        //used in function "SDEPrediction"
-        ros::Time previousTime;
-        ros::Time previousTimeEKF;
-        double freq;
 
-        // used in function "velocityPID"
+//--------------------- Member Variables Used Globally --------------------------
+
+
+		 ros::NodeHandle nh_;
+
+         double l;
+         double r;
+         double D;
+
+
+// used in function "velocityPID"
         float previous_error;
         float integral_error;
-//----------- ExpLocalization Member Variables ----------
+        
+        ros::Publisher leftWheelPub_;
+        ros::Publisher rightWheelPub_;
+
+		// wheel efforts
+		std_msgs::Float64 leftEffort;
+        std_msgs::Float64 rightEffort;
+        
+        // name of the robot
+        std::string robot;
+        
+        ros::Subscriber neighborGT_;
+        ros::Subscriber selfGT_;
+        
+        //ground truth for self and neighbor
+        Eigen::Vector3d neighborGT;
+        Eigen::Vector3d selfGT;
+        
+        // publishing frequency
+        double freq;
+        
+        // subscribed encoder velocities used for state prediction
+        float w1;
+        float w2;
+        
+        // diagonal value of the measurement covariance matrix
+        double dcov_m;
+        
+        // measurement covariance
+        Eigen::Matrix3d cov_m;
+        
+ //------------------- Member Variables Used in ExpL ----------------------------
+ 
+ 
+ 
+        ros::Time previousTime;
+        
         //initial position used in "expLocalization"
         Eigen::Matrix3d a_i;
-        Eigen::Matrix3d a_iDR;
+        
         Eigen::Vector3d currPose;
         Eigen::Matrix3d mu_i;
         Eigen::Matrix3d cov_i;
-        Eigen::Matrix3d cov_iDR;
-        Eigen::Vector3d poseDR;
-
+        
 
         Eigen::Matrix3d a_j;
-        //Eigen::Matrix3d mu_j;
-       // Eigen::Matrix3d cov_j;
 
         Eigen::Matrix3d mu_m;
-        Eigen::Matrix3d cov_m;
 
         Eigen::Matrix3d mu_i_bar;
         Eigen::Matrix3d Sigma_i_bar;
 
         Eigen::Matrix3d neighborIP_;
         Eigen::Matrix3d initialPose_;
-        float w1;
-        float w2;
         
-        // For distEKF-----
+        ros::Publisher poseEstimate_;
+        mrl1_ros::ExpL posEsti;
+
+ //------------------- Member Variables Used in distEKF ----------------------------------       
+        
+        // Body linear velocity and Angular velocity calculated from w1 and w2
         float Vim,Wim;
 
+        ros::Time previousTimeEKF;
+        
         Eigen::Matrix3d stateCovCurr;
         
         Eigen::Matrix2d processNoiseCov;
-        //------
-
-        Eigen::Vector3d neighborGT;
-        Eigen::Vector3d selfGT;
-
-        geometry_msgs::Pose2D estError;
 
         Eigen::Vector3d poseCurr;
-
-   // public:
-        std_msgs::Float64 leftEffort;
-        std_msgs::Float64 rightEffort;
-        mrl1_ros::ExpL posEsti;
-        mrl1_ros::ExpL posEstiEKF;
-        geometry_msgs::Point rqtEst;
-
-        ros::Publisher leftWheelPub_;
-        ros::Publisher rightWheelPub_;
        
-        ros::Publisher poseEstimate_;
+        mrl1_ros::ExpL posEstiEKF;
+        
         ros::Publisher poseEstimateEKF_;
-        ros::Publisher rqtEst_;
-        ros::NodeHandle nh_;
-   
-        ros::Subscriber neighborGT_;
-        ros::Subscriber selfGT_;
-        ros::Publisher estError_;
+       
 
-        std::string robot;
+//------------------- Member Variables Used For Dead Reckoning ----------------------
 
-
-        double dcov_m;
+		Eigen::Matrix3d a_iDR;
+		
+        Eigen::Matrix3d cov_iDR;
+        Eigen::Vector3d poseDR;
+        
+        
+        
         // Constructor
-        DistLocalization(ros::NodeHandle& nh, Eigen::Matrix3d initialPose,Eigen::Matrix3d neighborIP,std::string laserTopic,std::string neighborLaserTopic,std::string leftwheelcontrollertopic, std::string rightwheelcontrollertopic, std::string poseEstPubTopic, std::string poseEstPubTopicEKF,std::string poseEstSubTopic,std::string poseEstSubTopicEKF,std::string jointStateTopic,std::string selfGTTopic,std::string neighborGTTopic,std::string errorTopic):ProcessLaserScan(nh,initialPose,neighborIP,laserTopic),ProcessNeighborLaserScan(nh,initialPose,neighborIP,neighborLaserTopic),NeighborInfoSub(nh,neighborIP,poseEstSubTopic),NeighborInfoSubEKF(nh,neighborIP,poseEstSubTopicEKF),JointEncoderSub(nh,jointStateTopic)
+        DistLocalization(ros::NodeHandle& nh, double pubFreq, Eigen::Matrix3d initialPose,Eigen::Matrix3d neighborIP,std::string laserTopic,std::string neighborLaserTopic,std::string leftwheelcontrollertopic, std::string rightwheelcontrollertopic, std::string poseEstPubTopic, std::string poseEstPubTopicEKF,std::string poseEstSubTopic,std::string poseEstSubTopicEKF,std::string jointStateTopic,std::string selfGTTopic,std::string neighborGTTopic):ProcessLaserScan(nh,initialPose,neighborIP,laserTopic),ProcessNeighborLaserScan(nh,initialPose,neighborIP,neighborLaserTopic),NeighborInfoSub(nh,neighborIP,poseEstSubTopic),NeighborInfoSubEKF(nh,neighborIP,poseEstSubTopicEKF),JointEncoderSub(nh,jointStateTopic)
         {
             nh_ = nh;
 
-            freq = 15;
+            l = 0.3;
+            r = 0.08;
+            D = 1;
+            
+             freq = pubFreq;
 
              leftWheelPub_ = nh_.advertise<std_msgs::Float64>(leftwheelcontrollertopic, 1000);
             rightWheelPub_ = nh_.advertise<std_msgs::Float64>(rightwheelcontrollertopic, 1000);  
@@ -123,20 +152,17 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
             poseEstimateEKF_ = nh_.advertise<mrl1_ros::ExpL>(poseEstPubTopicEKF,1000);
 
 
+             neighborGT_ = nh_.subscribe<geometry_msgs::Pose>(neighborGTTopic, 1000, &DistLocalization::neighborGTCallback,this); 
 
-            estError_ = nh_.advertise<geometry_msgs::Pose2D>(errorTopic,1000);
-
- neighborGT_ = nh_.subscribe<geometry_msgs::Pose>(neighborGTTopic, 1000, &DistLocalization::neighborGTCallback,this); 
-
- selfGT_ = nh_.subscribe<geometry_msgs::Pose>(selfGTTopic, 1000, &DistLocalization::selfGTCallback,this); 
+            selfGT_ = nh_.subscribe<geometry_msgs::Pose>(selfGTTopic, 1000, &DistLocalization::selfGTCallback,this); 
 
 
             
             neighborGT = ExpMath::SE2ToXYTheta(neighborIP);
-             neighborIP_ = neighborIP;
-             initialPose_ = initialPose;
+            neighborIP_ = neighborIP;
+            initialPose_ = initialPose;
             selfGT = ExpMath::SE2ToXYTheta(initialPose);
-            poseDR = selfGT;
+            poseDR = ExpMath::SE2ToXYTheta(initialPose);
             
             robot = laserTopic;
 
@@ -150,6 +176,9 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
 
             poseCurr = ExpMath::SE2ToXYTheta(initialPose);
             currPose = poseCurr;    
+
+//--------------------------- PARAMETERS TO TUNE ------------------------------
+
             // state initial covariance for expLocalization
             // larger value expL respond to updates slower, too small value expL insensitive to measurement updates
             cov_i << 4,0,0,
@@ -181,7 +210,7 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
                      0, 1, 0,
                      0, 0, 1;
 
-
+//-----------------------------------------------------------------------------
             w1 = 0;
             w2 = 0;
 
@@ -224,10 +253,6 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
                 theta = 0.0000000001;
             }
 
-//cout<<"theta:"<<theta<<endl;
-//cout<<"x:"<<neighborGT_msg->position.x<<endl;
-//cout<<"y:"<<neighborGT_msg->position.y<<endl;
-
 
             neighborGT << neighborGT_msg->position.x,neighborGT_msg->position.y,theta;
         }
@@ -260,9 +285,6 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
             {
                 theta = 0.000000001;
             }
-//cout<<"theta:"<<theta<<endl;
-//cout<<"x:"<<selfGT_msg->position.x<<endl;
-//cout<<"y:"<<selfGT_msg->position.y<<endl;
 
             selfGT << selfGT_msg->position.x,selfGT_msg->position.y,theta;
         }
@@ -270,11 +292,8 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
         // PID control velocity via effort
         std_msgs::Float64 velocityPID(float velDesire, float currVel,float kp, float ki, float kd);
 
-        // main method to control robot
         void moveToLongestScan();
 
-
-        void moveSinasoidal();
 
         void moveStraight()
         {
@@ -290,11 +309,6 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
             double rightVelDes;
 
             double t = currTime.toSec();
-           // double tempLeft, tempRight;
-
-           // tempLeft = 0.6*(abs(sin(currTime.toSec()))+0.05);
-
-           // tempRight = 0.6*(abs(cos(currTime.toSec()))+0.05);
             
 
             if(t < 15)
@@ -309,14 +323,6 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
                 rightVelDes = 1;
 
             }
-           /* else if(t >=50)
-            {
-                leftVelDes = 1;
-                rightVelDes = 0.1;
-            }*/
-            //leftVelDes = pow(tempLeft,2);
-            //rightVelDes = tempRight;
-
             
             leftEffort = this->velocityPID(leftVelDes,encoderLeftVel,0.5,0.4,0.2);
                 
@@ -324,7 +330,8 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
             rightEffort = this->velocityPID(rightVelDes,encoderRightVel,0.5,0.4,0.2);
 
 
-        }       
+        } 
+
         // publish motor commands
         void Explore(void)
         {
@@ -346,9 +353,6 @@ class DistLocalization : public ProcessLaserScan, public ProcessNeighborLaserSca
                
                 leftWheelPub_.publish(leftEffort);
                rightWheelPub_.publish(rightEffort);
- 
-               // cout<< leftEffort.data<<","<<rightEffort.data<<endl;
-                //cout<< encoderLeftVel << endl;
             }
 
         }
